@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js",
-    "build": "npx prisma generate && npm run build"
-  },
+  "test": "echo \"Error: no test specified\" && exit 1",
+  "start": "nodemon server.js",
+  "build": "npx prisma generate",
+  "postinstall": "prisma generate"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
