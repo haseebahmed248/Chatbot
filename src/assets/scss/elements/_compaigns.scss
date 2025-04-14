@@ -1,0 +1,1059 @@
+// Variables
+$primary-color: #4D4DFF;
+$primary-hover: #5959FF;
+$dark-bg: #0E1117;
+$card-bg: #181C28;
+$border-color: #252A3A;
+$input-bg: #1B2030;
+$text-light: #E0E0E0;
+$text-muted: #90A0B0;
+$heading-color: #D0D0E0;
+$success-color: #10B981;
+$warning-color: #F59E0B;
+$danger-color: #E53E3E;
+$info-color: #3B82F6;
+
+// Fix for body scroll
+body {
+  overflow: hidden !important; /* Prevent body from scrolling */
+}
+
+// Main layout container styles - Fixed for double scrolling
+.main-center-content-m-left {
+  display: flex;
+  flex-direction: column;
+  height: 100vh !important;
+  overflow-y: auto !important; /* Force this to be the only scrollable container */
+  overflow-x: hidden !important;
+  margin-left: 305px;
+  transition: all 0.4s ease;
+  background-color: $dark-bg;
+  
+  @media (max-width: 1200px) {
+    margin-left: 60px;
+  }
+  
+  @media (max-width: 768px) {
+    margin-left: 0;
+  }
+  
+  &.collapsed {
+    margin-left: 60px;
+    transform: translateX(0);
+  }
+}
+
+// Full-width Campaigns SCSS - Fixed for double scrolling
+.campaigns-container {
+  width: 100%;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  overflow: visible !important; /* Force no scrollbars */
+  height: auto !important; /* Force auto height */
+  min-height: initial !important; /* Reset min-height */
+  max-height: none !important; /* Ensure no max-height restriction */
+  padding-bottom: 50px;
+  background-color: $dark-bg;
+  color: $text-light;
+
+  .campaigns-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin: 0 0 6px;
+      color: $heading-color;
+    }
+
+    p {
+      margin: 0;
+      font-size: 15px;
+      color: $text-muted;
+    }
+
+    .add-campaign-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 15px;
+      background-color: $primary-color;
+      border-radius: 5px;
+      color: white;
+      font-weight: 500;
+      font-size: 13px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      max-width: fit-content;
+
+      &:hover {
+        background-color: $primary-hover;
+      }
+
+      i {
+        font-size: 12px;
+      }
+    }
+  }
+
+  .campaigns-filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+
+    .search-filter {
+      position: relative;
+      width: 300px;
+
+      i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: $text-muted;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px 10px 10px 36px;
+        border-radius: 4px;
+        border: 1px solid $border-color;
+        background-color: $input-bg;
+        color: $text-light;
+        font-size: 14px;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+        }
+
+        &::placeholder {
+          color: $text-muted;
+        }
+      }
+    }
+
+    .model-sort-filters {
+      display: flex;
+      gap: 24px;
+
+      .model-filter, .sort-filter {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        span {
+          font-size: 14px;
+          color: $text-muted;
+        }
+
+        select {
+          padding: 8px 12px;
+          border-radius: 4px;
+          border: 1px solid $border-color;
+          background-color: $input-bg;
+          color: $text-light;
+          font-size: 14px;
+          cursor: pointer;
+          min-width: 120px;
+
+          &:focus {
+            outline: none;
+            border-color: $primary-color;
+          }
+        }
+      }
+    }
+  }
+
+  .campaigns-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin-bottom: 20px;
+  }
+
+  .campaigns-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    padding: 100px 0;
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba($primary-color, 0.3);
+      border-radius: 50%;
+      border-top-color: $primary-color;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    p {
+      font-size: 16px;
+      color: $text-muted;
+    }
+  }
+
+  .no-campaigns {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    text-align: center;
+    padding: 100px 0;
+
+    .no-campaigns-icon {
+      font-size: 64px;
+      color: $text-muted;
+      opacity: 0.3;
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: $heading-color;
+    }
+
+    p {
+      font-size: 16px;
+      color: $text-muted;
+      opacity: 0.7;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: $primary-color;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: $primary-hover;
+      }
+    }
+  }
+
+  // Updated campaigns list and card styles
+  .campaigns-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 24px;
+    margin-bottom: 30px;
+    min-height: auto !important;
+  }
+  
+  .campaign-card {
+    background-color: $card-bg;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    border: 1px solid $border-color;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      border-color: $primary-color;
+    }
+    
+    &.selected {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 1px $primary-color, 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .campaign-image {
+      height: 200px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      background-color: darken($card-bg, 5%);
+    }
+    
+    .campaign-status {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+      
+      &.active {
+        background-color: $success-color;
+      }
+      
+      &.draft {
+        background-color: #6B7280;
+      }
+      
+      &.completed {
+        background-color: $primary-color;
+      }
+      
+      &.paused {
+        background-color: $warning-color;
+      }
+    }
+    
+    .card-actions {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 8px;
+    }
+    
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+      
+      &.edit:hover {
+        background-color: $primary-color;
+      }
+      
+      &.delete:hover {
+        background-color: $danger-color;
+      }
+    }
+    
+    .campaign-details {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      background-color: $card-bg;
+    }
+    
+    // Updated to support multiple model tags
+    .model-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+      
+      .model-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        background-color: rgba($primary-color, 0.1);
+        color: $primary-color;
+        
+        &.image-generation {
+          background-color: rgba($success-color, 0.1);
+          color: $success-color;
+        }
+        
+        &.text-generation {
+          background-color: rgba(#4F46E5, 0.1);
+          color: #4F46E5;
+        }
+        
+        &.multi-modal {
+          background-color: rgba($warning-color, 0.1);
+          color: $warning-color;
+        }
+    
+        i {
+          font-size: 12px;
+        }
+    
+        span {
+          font-size: 12px;
+          font-weight: 500;
+        }
+      }
+    }
+  
+    .campaign-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: $text-light;
+      line-height: 1.3;
+      margin: 0 0 8px;
+    }
+    
+    .campaign-description {
+      font-size: 14px;
+      line-height: 1.5;
+      color: $text-muted;
+      margin: 0 0 16px;
+      flex: 1;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      text-overflow: ellipsis;
+    }
+    
+    .campaign-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      border-top: 1px solid $border-color;
+      padding-top: 12px;
+    }
+    
+    .campaign-date {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: $text-muted;
+  
+      i {
+        font-size: 12px;
+      }
+  
+      span {
+        font-size: 12px;
+      }
+    }
+    
+    .view-details-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: $primary-color;
+      text-decoration: none;
+      
+      &:hover {
+        text-decoration: underline;
+        
+        i {
+          transform: translateX(2px);
+        }
+      }
+      
+      i {
+        font-size: 12px;
+        transition: transform 0.2s;
+      }
+    }
+  }
+  
+}
+
+// Modal Styles
+.campaign-modal-overlay,
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.campaign-modal,
+.delete-modal {
+  width: 100%;
+  max-width: 600px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: modalFadeIn 0.3s ease-out;
+  background-color: $card-bg;
+  color: $text-light;
+  border: 1px solid $border-color;
+}
+
+.delete-modal {
+  max-width: 450px;
+}
+
+.campaign-modal-header,
+.delete-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid $border-color;
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: $heading-color;
+  }
+
+  .close-btn {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    color: $text-muted;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: $text-light;
+    }
+  }
+}
+
+.campaign-modal-body {
+  padding: 20px;
+  max-height: 70vh !important; /* Ensure modal has a scrollable body */
+  overflow-y: auto !important;
+
+  .form-group {
+    margin-bottom: 20px;
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: $heading-color;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 4px;
+      border: 1px solid $border-color;
+      background-color: $input-bg;
+      color: $text-light;
+      font-size: 14px;
+
+      &:focus {
+        outline: none;
+        border-color: $primary-color;
+      }
+
+      &.error {
+        border-color: $danger-color;
+      }
+    }
+
+    .error-message {
+      display: block;
+      color: $danger-color;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    // Model selection helper text
+    .model-helper-text {
+      font-size: 12px;
+      color: $text-muted;
+      font-weight: normal;
+      margin-left: 8px;
+    }
+    
+    // Model checkbox container
+    .model-checkbox-container {
+      margin-top: 10px;
+      border: 1px solid $border-color;
+      border-radius: 6px;
+      overflow: hidden;
+      
+      &.error {
+        border-color: $danger-color;
+      }
+      
+      .model-checkbox-item {
+        padding: 12px 16px;
+        
+        &:not(:last-child) {
+          border-bottom: 1px solid $border-color;
+        }
+        
+        .checkbox-label-container {
+          display: flex;
+          align-items: center;
+          position: relative;
+          padding-left: 30px;
+          cursor: pointer;
+          font-size: 15px;
+          color: $text-light;
+          user-select: none;
+          
+          input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+          }
+          
+          .checkmark {
+            position: absolute;
+            left: 0;
+            height: 20px;
+            width: 20px;
+            border: 2px solid $border-color;
+            border-radius: 4px;
+            background-color: $input-bg;
+            
+            &:after {
+              content: "";
+              position: absolute;
+              display: none;
+              left: 6px;
+              top: 2px;
+              width: 5px;
+              height: 10px;
+              border: solid white;
+              border-width: 0 2px 2px 0;
+              transform: rotate(45deg);
+            }
+          }
+          
+          &:hover input ~ .checkmark {
+            border-color: lighten($border-color, 10%);
+          }
+          
+          input:checked ~ .checkmark {
+            background-color: $primary-color;
+            border-color: $primary-color;
+          }
+          
+          input:checked ~ .checkmark:after {
+            display: block;
+          }
+          
+          .model-name {
+            flex: 1;
+          }
+          
+          .model-price {
+            margin-left: auto;
+            font-size: 14px;
+            font-weight: 600;
+            color: $success-color;
+            background-color: rgba($success-color, 0.1);
+            padding: 3px 8px;
+            border-radius: 4px;
+          }
+        }
+      }
+    }
+
+    .image-upload-area {
+      width: 100%;
+      height: 200px;
+      border: 2px dashed $border-color;
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s;
+
+      &:hover {
+        border-color: $primary-color;
+      }
+
+      &.error {
+        border-color: $danger-color;
+      }
+
+      .upload-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+        
+        i {
+          font-size: 36px;
+          color: $text-muted;
+          margin-bottom: 12px;
+        }
+
+        span {
+          font-size: 16px;
+          font-weight: 500;
+          margin-bottom: 6px;
+          color: $text-light;
+        }
+
+        p {
+          font-size: 13px;
+          color: $text-muted;
+        }
+      }
+
+      .image-preview {
+        position: relative;
+        width: 100%;
+        height: 100%;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .image-overlay {
+          position: absolute;
+          inset: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity 0.2s;
+
+          span {
+            color: white;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.2);
+          }
+        }
+
+        &:hover .image-overlay {
+          opacity: 1;
+        }
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+
+    button {
+      padding: 10px 16px;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 14px;
+      
+      &.btn-primary {
+        background-color: $primary-color;
+        color: white;
+        border: none;
+        
+        &:hover {
+          background-color: $primary-hover;
+        }
+      }
+      
+      &.btn-secondary {
+        background-color: transparent;
+        border: 1px solid $border-color;
+        color: $text-light;
+        
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+      }
+    }
+  }
+}
+
+.delete-modal-body {
+  padding: 24px 20px;
+  text-align: center;
+
+  .delete-warning-icon {
+    font-size: 40px;
+    color: $danger-color;
+    margin-bottom: 16px;
+  }
+
+  .delete-warning-message {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: $heading-color;
+
+    strong {
+      font-weight: 600;
+    }
+  }
+
+  .delete-warning-description {
+    font-size: 14px;
+    color: $text-muted;
+  }
+}
+
+.delete-modal-footer {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  border-top: 1px solid $border-color;
+  
+  button {
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 14px;
+    
+    &.btn-danger {
+      background-color: $danger-color;
+      color: white;
+      border: none;
+      
+      &:hover {
+        background-color: darken($danger-color, 10%);
+      }
+    }
+    
+    &.btn-secondary {
+      background-color: transparent;
+      border: 1px solid $border-color;
+      color: $text-light;
+      
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+    }
+  }
+}
+
+// Notification toast styling
+.notification-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 300px;
+  max-width: 400px;
+  padding: 15px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 9999;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  animation: slideInRight 0.4s ease-out;
+  
+  &.success {
+    background-color: $success-color;
+    color: white;
+  }
+  
+  &.error {
+    background-color: $danger-color;
+    color: white;
+  }
+  
+  .notification-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    
+    i {
+      font-size: 18px;
+    }
+  }
+  
+  .close-notification {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// Animations
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// Responsive design
+@media (max-width: 1500px) {
+  .campaigns-container .campaigns-list {
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  }
+}
+
+@media (max-width: 1200px) {
+  .campaigns-container .campaigns-list {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 992px) {
+  .campaigns-container {
+    .campaigns-filters {
+      .model-sort-filters {
+        flex-wrap: wrap;
+      }
+    }
+    
+    .campaigns-list {
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .campaigns-container {
+    padding: 15px;
+    
+    .campaigns-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+      
+      .add-campaign-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+    
+    .campaigns-filters {
+      flex-direction: column;
+      gap: 16px;
+      
+      .search-filter {
+        width: 100%;
+      }
+      
+      .model-sort-filters {
+        width: 100%;
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+    
+    .campaigns-list {
+      grid-template-columns: 1fr;
+    }
+    
+    .notification-toast {
+      left: 15px;
+      right: 15px;
+      width: calc(100% - 30px);
+      max-width: none;
+    }
+  }
+
+  .campaign-modal-body {
+    .model-checkbox-item {
+      .checkbox-label-container {
+        flex-wrap: wrap;
+        
+        .model-price {
+          margin-left: 30px;
+          margin-top: 4px;
+        }
+      }
+    }
+  }
+  
+  .campaign-card {
+    .model-tags {
+      margin-bottom: 8px;
+      
+      .model-tag {
+        padding: 3px 8px;
+        font-size: 11px;
+        
+        i {
+          font-size: 11px;
+        }
+        
+        span {
+          font-size: 11px;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,206 @@
+// src/assets/scss/admin/admin.scss
+// Main admin stylesheet that imports all admin styles
+
+// Import variables first, before using them in other files
+@import 'variables';
+
+// Import global admin styles
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  font-family: $admin-font-family;
+}
+
+// Sidebar and header styles
+.admin-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: #1e3656;
+  color: white;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  
+  .admin-brand {
+    display: flex;
+    align-items: center;
+    
+    img, svg {
+      height: 36px;
+      margin-right: 10px;
+    }
+    
+    .admin-brand-name {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    
+    .admin-page-name {
+      margin-left: 10px;
+      font-size: 14px;
+      font-weight: 400;
+      opacity: 0.8;
+    }
+  }
+  
+  .admin-user-section {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    
+    .admin-welcome {
+      margin-right: 15px;
+      
+      span {
+        font-weight: 600;
+      }
+    }
+    
+    .admin-logout {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 6px 15px;
+      border-radius: 4px;
+      text-decoration: none;
+      
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+    }
+  }
+}
+
+.admin-sidebar {
+  width: 210px;
+  background-color: white;
+  border-right: 1px solid #dee2e6;
+  position: fixed;
+  top: 60px;
+  bottom: 0;
+  left: 0;
+  z-index: 900;
+  
+  .admin-nav {
+    padding: 20px 0;
+    
+    .admin-nav-item {
+      margin-bottom: 5px;
+      
+      .admin-nav-link {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        color: #495057;
+        text-decoration: none;
+        
+        &:hover, &.active {
+          background-color: rgba(0, 0, 0, 0.05);
+          color: #1e3656;
+        }
+        
+        i, svg {
+          margin-right: 10px;
+          width: 20px;
+          text-align: center;
+        }
+      }
+    }
+  }
+}
+
+.admin-content {
+  margin-left: 210px;
+  margin-top: 60px;
+  padding: 20px;
+  
+  // For mobile
+  @media (max-width: 768px) {
+    margin-left: 0;
+    padding: 15px;
+  }
+}
+
+// Loader
+.admin-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  
+  .admin-spinner {
+    margin-bottom: 15px;
+    color: #1e3656;
+  }
+  
+  .admin-loading-text {
+    color: #6c757d;
+  }
+}
+
+// Alerts
+.admin-alert {
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  position: relative;
+  
+  .admin-alert-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.5;
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+  
+  .admin-alert-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+  
+  &.admin-alert-success {
+    background-color: rgba(46, 204, 113, 0.1);
+    border-left: 4px solid #2ecc71;
+    color: darken(#2ecc71, 20%);
+  }
+  
+  &.admin-alert-danger {
+    background-color: rgba(231, 76, 60, 0.1);
+    border-left: 4px solid #e74c3c;
+    color: darken(#e74c3c, 20%);
+  }
+  
+  &.admin-alert-warning {
+    background-color: rgba(243, 156, 18, 0.1);
+    border-left: 4px solid #f39c12;
+    color: darken(#f39c12, 20%);
+  }
+  
+  &.admin-alert-info {
+    background-color: rgba(52, 152, 219, 0.1);
+    border-left: 4px solid #3498db;
+    color: darken(#3498db, 20%);
+  }
+}
+
+// Import page-specific styles
+@import 'dashboard-page';
+@import 'user-management';
+@import 'modal';
+@import 'campaign-review';

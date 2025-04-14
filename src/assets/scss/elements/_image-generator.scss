@@ -1,0 +1,1218 @@
+// Variables
+$primary-color: #4A62F4;
+$primary-light: lighten($primary-color, 35%);
+$primary-dark: darken($primary-color, 15%);
+
+$light-bg: #ffffff;
+$light-card-bg: #f8f8fb;
+$light-border: #E5E4FF;
+$light-text: #333333;
+$light-text-secondary: #707070;
+
+// Dark mode colors matching the screenshot
+$dark-bg: #121220;
+$dark-card-bg: #212134;
+$dark-content-bg: #191927;
+$dark-border: #35354D;
+$dark-text: #e0e0e0;
+$dark-text-secondary: rgba(255, 255, 255, 0.7);
+
+$sidebar-width: 290px;
+$sidebar-collapsed-width: 80px;
+
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 12px;
+
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+
+// Mixins
+@mixin flex($direction: row, $justify: flex-start, $align: stretch, $gap: 0) {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+  @if $gap > 0 {
+    gap: $gap;
+  }
+}
+
+@mixin dark-mode {
+  [data-theme="dark"] & {
+    @content;
+  }
+}
+
+@mixin responsive($breakpoint) {
+  @if $breakpoint == tablet {
+    @media (max-width: 992px) { @content; }
+  } @else if $breakpoint == mobile {
+    @media (max-width: 768px) { @content; }
+  } @else if $breakpoint == small {
+    @media (max-width: 576px) { @content; }
+  }
+}
+
+// Main content area - takes full width minus sidebar
+.main-content-area {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  background-color: $dark-content-bg; // Using dark by default based on screenshot
+  margin-left: $sidebar-width;
+  transition: margin-left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  
+  // Light mode styling
+  [data-theme="light"] & {
+    background-color: $light-bg;
+  }
+  
+  &.sidebar-collapsed {
+    margin-left: $sidebar-collapsed-width;
+  }
+}
+
+// Header Area
+.generator-header {
+  padding: $spacing-md $spacing-lg;
+  border-bottom: 1px solid $dark-border;
+  background-color: $dark-card-bg;
+  z-index: 10;
+  
+  [data-theme="light"] & {
+    background-color: $light-card-bg;
+    border-color: $light-border;
+  }
+  
+  .header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  
+  .campaign-selection {
+    @include flex(row, space-between, center, $spacing-md);
+    
+    @include responsive(mobile) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: $spacing-sm;
+    }
+  }
+  
+  .section-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    color: $dark-text;
+    
+    [data-theme="light"] & {
+      color: $light-text;
+    }
+  }
+}
+
+// Main content container
+.generator-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: calc(100vh - 70px); // Adjust based on header height
+}
+
+// Campaign Header
+.campaign-header {
+  @include flex(row, flex-start, center, $spacing-lg);
+  padding: $spacing-md;
+  background-color: $light-card-bg;
+  border-radius: $border-radius-md;
+  
+  @include dark-mode {
+    background-color: $dark-card-bg;
+  }
+  
+  @include responsive(mobile) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  &.skeleton {
+    opacity: 0.7;
+  }
+  
+  .campaign-image {
+    width: 64px;
+    height: 64px;
+    border-radius: $border-radius-md;
+    overflow: hidden;
+    flex-shrink: 0;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    &-placeholder {
+      @include flex(row, center, center);
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.05);
+      
+      @include dark-mode {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+      
+      i {
+        font-size: 24px;
+        color: $light-text-secondary;
+        
+        @include dark-mode {
+          color: $dark-text-secondary;
+        }
+      }
+    }
+  }
+  
+  .campaign-info {
+    flex: 1;
+    
+    @include responsive(mobile) {
+      margin-top: $spacing-sm;
+    }
+  }
+  
+  .campaign-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 $spacing-xs;
+    color: $light-text;
+    
+    @include dark-mode {
+      color: $dark-text;
+    }
+  }
+  
+  .campaign-description {
+    font-size: 14px;
+    margin: 0;
+    color: $light-text-secondary;
+    
+    @include dark-mode {
+      color: $dark-text-secondary;
+    }
+  }
+  
+  .skeleton-image {
+    background-color: #eee;
+    animation: pulse 1.5s infinite;
+    
+    @include dark-mode {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+  
+  .skeleton-text {
+    height: 14px;
+    margin-bottom: $spacing-xs;
+    background-color: #eee;
+    border-radius: $border-radius-sm;
+    animation: pulse 1.5s infinite;
+    
+    &:first-child {
+      width: 60%;
+      height: 18px;
+    }
+    
+    &:last-child {
+      width: 80%;
+    }
+    
+    @include dark-mode {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+// Campaign Selector
+.campaign-selector {
+  position: relative;
+  min-width: 200px;
+  
+  .selector-header {
+    @include flex(row, space-between, center);
+    padding: $spacing-sm $spacing-md;
+    background-color: $dark-card-bg;
+    border: 1px solid $dark-border;
+    border-radius: $border-radius-md;
+    cursor: pointer;
+    user-select: none;
+    
+    [data-theme="light"] & {
+      background-color: $light-card-bg;
+      border-color: $light-border;
+    }
+    
+    span {
+      color: $dark-text;
+      font-weight: 500;
+      
+      [data-theme="light"] & {
+        color: $light-text;
+      }
+    }
+    
+    i {
+      color: $dark-text-secondary;
+      
+      [data-theme="light"] & {
+        color: $light-text-secondary;
+      }
+    }
+  }
+  
+  .selector-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 100%;
+    background-color: $dark-card-bg;
+    border: 1px solid $dark-border;
+    border-radius: $border-radius-md;
+    overflow: hidden;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    
+    [data-theme="light"] & {
+      background-color: $light-bg;
+      border-color: $light-border;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  .dropdown-item {
+    @include flex(row, flex-start, center, $spacing-sm);
+    padding: $spacing-sm $spacing-md;
+    cursor: pointer;
+    color: $dark-text;
+    
+    [data-theme="light"] & {
+      color: $light-text;
+    }
+    
+    &:hover {
+      background-color: rgba($primary-color, 0.2);
+      
+      [data-theme="light"] & {
+        background-color: $primary-light;
+      }
+    }
+    
+    &.selected {
+      background-color: rgba($primary-color, 0.2);
+      color: lighten($primary-color, 25%);
+      font-weight: 500;
+      
+      [data-theme="light"] & {
+        background-color: $primary-light;
+        color: $primary-color;
+      }
+    }
+    
+    &.loading {
+      cursor: default;
+      justify-content: center;
+      padding: $spacing-md;
+      
+      &:hover {
+        background-color: transparent;
+      }
+    }
+    
+    &.create-new {
+      border-top: 1px solid $dark-border;
+      color: lighten($primary-color, 20%);
+      
+      [data-theme="light"] & {
+        border-color: $light-border;
+        color: $primary-color;
+      }
+    }
+    
+    i {
+      font-size: 14px;
+    }
+  }
+}
+
+// Image Count Selector - opens upward unlike Campaign Selector
+.image-count-selector {
+  position: relative;
+  min-width: 120px;
+  
+  .selector-header {
+    @include flex(row, space-between, center);
+    padding: $spacing-sm $spacing-md;
+    background-color: $dark-card-bg;
+    border: 1px solid $dark-border;
+    border-radius: $border-radius-md;
+    cursor: pointer;
+    user-select: none;
+    
+    [data-theme="light"] & {
+      background-color: $light-card-bg;
+      border-color: $light-border;
+    }
+    
+    span {
+      color: $dark-text;
+      font-weight: 500;
+      
+      [data-theme="light"] & {
+        color: $light-text;
+      }
+    }
+    
+    i {
+      color: $dark-text-secondary;
+      
+      [data-theme="light"] & {
+        color: $light-text-secondary;
+      }
+    }
+  }
+  
+  .selector-dropdown {
+    position: absolute;
+    bottom: calc(100% + 4px); // Position above instead of below
+    left: 0;
+    width: 100%;
+    background-color: $dark-card-bg;
+    border: 1px solid $dark-border;
+    border-radius: $border-radius-md;
+    overflow: hidden;
+    z-index: 100;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3); // Shadow direction changed
+    
+    [data-theme="light"] & {
+      background-color: $light-bg;
+      border-color: $light-border;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  .dropdown-item {
+    @include flex(row, flex-start, center, $spacing-sm);
+    padding: $spacing-sm $spacing-md;
+    cursor: pointer;
+    color: $dark-text;
+    
+    [data-theme="light"] & {
+      color: $light-text;
+    }
+    
+    &:hover {
+      background-color: rgba($primary-color, 0.2);
+      
+      [data-theme="light"] & {
+        background-color: $primary-light;
+      }
+    }
+    
+    &.selected {
+      background-color: rgba($primary-color, 0.2);
+      color: lighten($primary-color, 25%);
+      font-weight: 500;
+      
+      [data-theme="light"] & {
+        background-color: $primary-light;
+        color: $primary-color;
+      }
+    }
+  }
+}
+
+// Messages Container
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+  padding: $spacing-lg;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  
+  // Scrollbar styling
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent; 
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    
+    [data-theme="light"] & {
+      background: rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+    
+    [data-theme="light"] & {
+      background: rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+// Auth Required Message
+.auth-required {
+  @include flex(row, center, center);
+  height: 100%;
+  
+  .auth-message {
+    @include flex(column, center, center, $spacing-md);
+    text-align: center;
+    max-width: 400px;
+    padding: $spacing-xl;
+    background-color: $dark-card-bg;
+    border-radius: $border-radius-lg;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    
+    [data-theme="light"] & {
+      background-color: $light-card-bg;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    i {
+      font-size: 48px;
+      color: $dark-text-secondary;
+      margin-bottom: $spacing-md;
+      
+      [data-theme="light"] & {
+        color: $light-text-secondary;
+      }
+    }
+    
+    h3 {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 $spacing-sm;
+      color: $dark-text;
+      
+      [data-theme="light"] & {
+        color: $light-text;
+      }
+    }
+    
+    p {
+      margin: 0 0 $spacing-lg;
+      color: $dark-text-secondary;
+      
+      [data-theme="light"] & {
+        color: $light-text-secondary;
+      }
+    }
+  }
+}
+
+// Empty State
+.empty-state {
+  @include flex(column, center, center, $spacing-md);
+  height: 100%;
+  text-align: center;
+  
+  .empty-illustration {
+    @include flex(row, center, center);
+    width: 80px;
+    height: 80px;
+    background-color: $dark-card-bg;
+    border-radius: 50%;
+    margin-bottom: $spacing-md;
+    
+    [data-theme="light"] & {
+      background-color: $light-card-bg;
+    }
+    
+    i {
+      font-size: 32px;
+      color: $dark-text-secondary;
+      
+      [data-theme="light"] & {
+        color: $light-text-secondary;
+      }
+    }
+  }
+  
+  h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 $spacing-sm;
+    color: $dark-text;
+    
+    [data-theme="light"] & {
+      color: $light-text;
+    }
+  }
+  
+  p {
+    margin: 0;
+    color: $dark-text-secondary;
+    
+    [data-theme="light"] & {
+      color: $light-text-secondary;
+    }
+  }
+}
+
+// Messages List
+.messages-list {
+  @include flex(column, flex-start, stretch, $spacing-lg);
+  width: 100%;
+}
+
+// Message Item
+.message-item {
+  @include flex(row, flex-start, flex-start, $spacing-md);
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  max-width: 90%;
+  
+  @include responsive(mobile) {
+    gap: $spacing-sm;
+    max-width: 100%;
+  }
+  
+  .message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    
+    @include responsive(small) {
+      width: 32px;
+      height: 32px;
+    }
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  
+  .message-content {
+    flex: 1;
+    
+    @include responsive(mobile) {
+      max-width: calc(100% - 48px);
+    }
+  }
+  
+  .message-header {
+    margin-bottom: $spacing-xs;
+    
+    .message-sender {
+      font-weight: 600;
+      font-size: 16px;
+      color: $dark-text;
+      
+      [data-theme="light"] & {
+        color: $light-text;
+      }
+    }
+  }
+  
+  .message-text {
+    background-color: $dark-card-bg;
+    padding: $spacing-md;
+    border-radius: $border-radius-md;
+    color: $dark-text;
+    font-size: 15px;
+    line-height: 1.5;
+    
+    [data-theme="light"] & {
+      background-color: $light-card-bg;
+      color: $light-text;
+    }
+  }
+  
+  .message-image {
+    margin-top: $spacing-sm;
+    border-radius: $border-radius-md;
+    overflow: hidden;
+    max-width: 300px;
+    
+    img {
+      width: 100%;
+      display: block;
+    }
+  }
+  
+  &.user-message {
+    margin-left: auto;
+    
+    .message-text {
+      background-color: rgba($primary-color, 0.15);
+      color: lighten($primary-color, 30%);
+      
+      [data-theme="light"] & {
+        background-color: $primary-light;
+        color: darken($primary-color, 20%);
+      }
+    }
+  }
+}
+
+// Generated Images
+.message-generated-images {
+  margin-top: $spacing-md;
+  width: 100%;
+  
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: $spacing-md;
+    
+    @include responsive(mobile) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .image-item {
+    border-radius: $border-radius-md;
+    overflow: hidden;
+    aspect-ratio: 1/1;
+    border: 1px solid $dark-border;
+    
+    [data-theme="light"] & {
+      border-color: $light-border;
+    }
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  
+  .image-caption {
+    margin-top: $spacing-sm;
+    font-style: italic;
+    color: $dark-text-secondary;
+    
+    [data-theme="light"] & {
+      color: $light-text-secondary;
+    }
+    
+    p {
+      margin: 0;
+    }
+  }
+  
+  .image-actions {
+    @include flex(row, space-between, center);
+    margin-top: $spacing-md;
+    padding-top: $spacing-md;
+    border-top: 1px solid $dark-border;
+    
+    [data-theme="light"] & {
+      border-color: $light-border;
+    }
+  }
+  
+  .powered-by {
+    @include flex(row, flex-start, center, $spacing-sm);
+    color: $dark-text-secondary;
+    font-size: 14px;
+    
+    [data-theme="light"] & {
+      color: $light-text-secondary;
+    }
+    
+    img {
+      height: 16px;
+      width: auto;
+    }
+  }
+  
+  .action-buttons {
+    @include flex(row, flex-end, center, $spacing-sm);
+  }
+}
+
+// Loading Indicator
+.loading-indicator {
+  @include flex(column, center, center, $spacing-md);
+  padding: $spacing-lg 0;
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba($primary-color, 0.3);
+    border-radius: 50%;
+    border-top-color: $primary-color;
+    animation: spin 1s ease-in-out infinite;
+  }
+  
+  span {
+    color: $light-text-secondary;
+    font-size: 14px;
+    
+    @include dark-mode {
+      color: $dark-text-secondary;
+    }
+  }
+}
+
+// Input Area
+.input-area {
+  padding: $spacing-md $spacing-lg;
+  background-color: $dark-card-bg;
+  border-top: 1px solid $dark-border;
+  
+  [data-theme="light"] & {
+    background-color: $light-card-bg;
+    border-color: $light-border;
+  }
+  
+  .input-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  
+  form {
+    &.disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  }
+}
+
+// Uploaded Preview
+.uploaded-preview {
+  position: relative;
+  margin-bottom: $spacing-md;
+  border-radius: $border-radius-md;
+  overflow: hidden;
+  max-width: 200px;
+  
+  img {
+    width: 100%;
+    display: block;
+  }
+  
+  .remove-upload {
+    position: absolute;
+    top: $spacing-xs;
+    right: $spacing-xs;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 0;
+    @include flex(row, center, center);
+    cursor: pointer;
+    transition: background-color 0.2s;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+  }
+}
+
+// Input Controls
+.input-controls {
+  @include flex(row, space-between, center, $spacing-sm);
+  background-color: $dark-card-bg;
+  border: 1px solid $dark-border;
+  border-radius: $border-radius-lg;
+  padding: $spacing-xs $spacing-md;
+  margin-bottom: $spacing-md;
+  
+  [data-theme="light"] & {
+    background-color: $light-card-bg;
+    border-color: $light-border;
+  }
+  
+  @include responsive(mobile) {
+    flex-direction: column;
+    padding: $spacing-xs $spacing-xs $spacing-md;
+  }
+  
+  .input-options {
+    @include responsive(mobile) {
+      align-self: flex-start;
+      margin-bottom: $spacing-xs;
+    }
+  }
+  
+  .input-field {
+    flex: 1;
+    
+    input {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: $spacing-md;
+      color: $dark-text;
+      font-size: 15px;
+      
+      [data-theme="light"] & {
+        color: $light-text;
+      }
+      
+      &::placeholder {
+        color: $dark-text-secondary;
+        
+        [data-theme="light"] & {
+          color: $light-text-secondary;
+        }
+      }
+    }
+  }
+  
+  .input-actions {
+    @include flex(row, flex-end, center, $spacing-xs);
+    
+    @include responsive(mobile) {
+      align-self: flex-end;
+    }
+  }
+}
+
+// Action Buttons
+.action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: $light-text-secondary;
+  @include flex(row, center, center);
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  @include dark-mode {
+    color: $dark-text-secondary;
+  }
+  
+  &:hover:not(:disabled) {
+    background-color: rgba(0, 0, 0, 0.05);
+    
+    @include dark-mode {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  &.submit-btn {
+    background-color: $primary-color;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: $primary-dark;
+    }
+    
+    &:disabled {
+      background-color: lighten($primary-color, 20%);
+      
+      @include dark-mode {
+        background-color: rgba($primary-color, 0.4);
+      }
+    }
+  }
+}
+
+// Primary Button
+.btn-primary {
+  display: inline-block;
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  border-radius: $border-radius-md;
+  padding: $spacing-sm $spacing-lg;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: $primary-dark;
+  }
+}
+
+// Footer
+.generator-footer {
+  padding: $spacing-md 0;
+  text-align: center;
+  font-size: 14px;
+  color: $dark-text-secondary;
+  
+  [data-theme="light"] & {
+    color: $light-text-secondary;
+  }
+  
+  p {
+    margin: 0;
+  }
+  
+  a {
+    color: $primary-color;
+    text-decoration: none;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Animations
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+}
+
+// New styles for the image grid and review modal
+
+// Enhanced image grid with hover effect
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); // Changed to 2x2 grid
+  gap: $spacing-md;
+  
+  @include responsive(mobile) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Image item with hover overlay
+.image-item {
+  position: relative;
+  border-radius: $border-radius-md;
+  overflow: hidden;
+  aspect-ratio: 1/1;
+  border: 1px solid $dark-border;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  [data-theme="light"] & {
+    border-color: $light-border;
+  }
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    
+    .image-overlay {
+      opacity: 1;
+    }
+  }
+  
+  // Overlay that appears on hover
+  .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    @include flex(row, center, center);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    
+    .review-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      @include flex(row, center, center);
+      cursor: pointer;
+      transition: background-color 0.2s;
+      
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+      }
+      
+      i {
+        font-size: 18px;
+      }
+    }
+  }
+}
+
+// Review Modal Overlay
+.review-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  @include flex(row, center, center);
+  z-index: 1000;
+}
+
+// Review Modal
+.review-modal {
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  background-color: $dark-card-bg;
+  border-radius: $border-radius-lg;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  
+  [data-theme="light"] & {
+    background-color: $light-card-bg;
+  }
+  
+  .close-modal {
+    position: absolute;
+    top: $spacing-md;
+    right: $spacing-md;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.4);
+    border: none;
+    color: white;
+    @include flex(row, center, center);
+    cursor: pointer;
+    z-index: 10;
+    transition: background-color 0.2s;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.6);
+    }
+    
+    i {
+      font-size: 18px;
+    }
+  }
+}
+
+// Review Image Container
+.review-image-container {
+  width: 100%;
+  height: 500px;
+  max-height: 60vh;
+  overflow: hidden;
+  background-color: black;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+// Review Actions
+.review-actions {
+  padding: $spacing-lg;
+  @include flex(column, flex-start, stretch, $spacing-md);
+  
+  .review-title {
+    h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: $dark-text;
+      
+      [data-theme="light"] & {
+        color: $light-text;
+      }
+    }
+  }
+  
+  .review-download-options {
+    @include flex(row, space-between, center);
+    
+    @include responsive(mobile) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: $spacing-sm;
+    }
+  }
+}
+
+// Download Buttons
+.download-btn {
+  flex: 1;
+  @include flex(row, center, center, $spacing-sm);
+  padding: $spacing-md;
+  border: none;
+  border-radius: $border-radius-md;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin: 0 $spacing-xs;
+  
+  @include responsive(mobile) {
+    margin: 0;
+  }
+  
+  i {
+    font-size: 18px;
+  }
+  
+  &.instagram {
+    background-color: #C13584;
+    
+    &:hover {
+      background-color: darken(#C13584, 10%);
+    }
+  }
+  
+  &.twitter {
+    background-color: #1DA1F2;
+    
+    &:hover {
+      background-color: darken(#1DA1F2, 10%);
+    }
+  }
+  
+  &.download {
+    background-color: $primary-color;
+    
+    &:hover {
+      background-color: $primary-dark;
+    }
+  }
+}

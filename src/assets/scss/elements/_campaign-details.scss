@@ -1,0 +1,1584 @@
+// Variables
+$primary-color: #3e6aff;
+$primary-dark: #2e59e5;
+$text-color: #e1e5ee;
+$text-secondary: #9aa2b8;
+$text-muted: #6c7a9c;
+$border-color: #2a3142;
+$background-dark: #121622;
+$background-card: #1b2030;
+$background-light: #1e2538;
+$input-bg: #1b2030;
+$disabled-color: #3f4659;
+$success-color: #32d296;
+$warning-color: #faa05a;
+$danger-color: #f0506e;
+$info-color: #3e6aff;
+$tab-active-border: #3e6aff;
+
+// Build Model Button - Updated positioning
+.build-model-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  max-height: 50px;
+  max-width: 140px;
+  z-index: 20;
+  margin-left: 0.5rem;
+  
+  &.ready {
+    background-color: $primary-color;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    
+    &:hover {
+      background-color: $primary-dark;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    i {
+      font-size: 0.9rem;
+    }
+  }
+  
+  &.success {
+    background-color: $success-color;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    pointer-events: none; // Disable click when built
+    opacity: 0.8; // Slightly dimmed to show it's non-interactive
+    
+    &:hover {
+      transform: none; // No hover effect
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); // Keep original shadow
+    }
+  }
+  
+  &.processing {
+    background-color: $warning-color;
+    color: white;
+    border: none;
+    pointer-events: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  &.disabled {
+    background-color: $background-light;
+    color: $text-muted;
+    border: 1px solid $border-color;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+// Built Successfully Badge
+.built-successfully-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  background-color: rgba($success-color, 0.15);
+  color: $success-color;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  margin-left: 0.5rem;
+  z-index: 20;
+}
+
+// Chat Button styles
+// Create a separate standalone chat button for the top header area
+.header-chat-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1.2rem;
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  z-index: 20;
+  
+  &:hover {
+    background-color: $primary-dark;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  }
+  
+  i {
+    font-size: 1.3rem;
+  }
+}
+
+// Main image chat button - Updated for use in header
+.main-image-chat-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1.2rem;
+  background-color: $success-color;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  min-width: 160px;
+  z-index: 20;
+  margin-left: 0.5rem;
+  
+  &:hover {
+    background-color: darken($success-color, 10%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  }
+  
+  i {
+    font-size: 1.3rem;
+  }
+}
+
+// Chat with Campaign Button
+// New Chat Button Class for separate button
+.chat-campaign-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.5rem;
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  z-index: 20;
+  
+  &:hover {
+    background-color: $primary-dark;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  }
+  
+  i {
+    font-size: 1.3rem;
+  }
+}
+
+// Adjust header for positioning
+.campaign-details-header-container {
+  position: relative;
+  margin-bottom: 4rem;
+}
+
+/* Campaign Details Page Styles */
+
+// Local mixins (defined here to avoid dependency issues)
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.campaign-details-container {
+  padding: 2rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  min-height: calc(100vh - 60px);
+  background-color: $background-dark;
+  color: $text-color;
+  font-size: 16px;
+  position: relative; /* Important for absolute positioning */
+}
+
+// Campaign back navigation with chat button instead of badge - UPDATED
+.campaign-details-back {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  margin-top: 60px;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 1.1rem;
+    color: $primary-color;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+
+    i {
+      margin-right: 0.5rem;
+      font-size: 1rem;
+    }
+
+    &:hover {
+      color: lighten($primary-color, 10%);
+    }
+  }
+  
+  // Action buttons container - NEW
+  .back-button-actions {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+// Campaign header
+.campaign-details-header {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2.5rem; // Increased from 2rem
+  padding-bottom: 1.75rem; // Increased from 1.5rem
+  border-bottom: 1px solid $border-color;
+
+  .campaign-details-info {
+    flex: 1;
+
+    h1 {
+      font-size: 2.8rem; // Increased from 2.2rem
+      margin-bottom: 1rem; // Increased from 0.75rem
+      color: $text-color;
+      font-weight: 700; // Increased from 600
+      line-height: 1.2; // Added line height
+    }
+
+    .campaign-details-description {
+      font-size: 1.25rem; // Increased from 1.1rem
+      color: $text-secondary;
+      margin-bottom: 1.75rem; // Increased from 1.5rem
+      line-height: 1.7; // Increased from 1.6
+    }
+  }
+
+  .campaign-details-image {
+    width: 360px; // Increased from 320px
+    height: 240px; // Increased from 210px
+    border-radius: 12px; // Increased from 10px
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); // Enhanced shadow
+    position: relative;
+    background-color: $background-card;
+    border: 1px solid $border-color;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .no-image {
+      width: 100%;
+      height: 100%;
+      @include flex-column;
+      align-items: center;
+      justify-content: center;
+      background-color: $background-light;
+      color: $text-muted;
+
+      i {
+        font-size: 4rem; // Increased from 3.5rem
+        margin-bottom: 1rem; // Increased from 0.75rem
+        opacity: 0.7;
+      }
+      
+      span {
+        font-size: 1.2rem; // Increased from 1.1rem
+      }
+    }
+    
+    .main-image-badge {
+      position: absolute;
+      top: 16px; // Increased from 12px
+      left: 16px; // Increased from 12px
+      background-color: rgba($primary-color, 0.9);
+      color: white;
+      padding: 8px 14px; // Increased from 6px 12px
+      border-radius: 6px; // Increased from 4px
+      font-size: 0.95rem; // Increased from 0.85rem
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Remove any unwanted console text by hiding overflow */
+    overflow: hidden;
+    position: relative;
+    
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba($background-dark, 0.5);
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    &:hover::before {
+      opacity: 1;
+    }
+  }
+}
+
+// Campaign model badge
+.campaign-details-model {
+  display: inline-flex;
+  align-items: center;
+  background-color: $background-light;
+  padding: 0.625rem 1.25rem;
+  border-radius: 30px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: 1px solid $border-color;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  // Add hover effect
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  i {
+    margin-right: 0.75rem;
+    font-size: 1.2rem;
+  }
+
+  &.image-generation {
+    background-color: rgba($success-color, 0.15);
+    color: $success-color;
+    border-color: rgba($success-color, 0.3);
+  }
+
+  &.text-generation {
+    background-color: rgba($info-color, 0.15);
+    color: $info-color;
+    border-color: rgba($info-color, 0.3);
+  }
+
+  &.multi-modal {
+    background-color: rgba(194, 99, 214, 0.15);
+    color: #c263d6;
+    border-color: rgba(194, 99, 214, 0.3);
+  }
+}
+
+// Campaign meta
+.campaign-details-meta {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem; // Increased from 1.5rem
+  font-size: 1.1rem; // Increased from 0.95rem
+  color: $text-muted;
+
+  .campaign-details-date {
+    display: flex;
+    align-items: center;
+
+    i {
+      margin-right: 0.6rem; // Increased from 0.5rem
+      font-size: 1.1rem; // Added font size
+    }
+  }
+
+  .campaign-details-status {
+    padding: 0.5rem 1.2rem; // Increased from 0.4rem 1rem
+    border-radius: 6px; // Increased from 4px
+    font-size: 0.95rem; // Increased from 0.85rem
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &.draft {
+      background-color: rgba(120, 120, 120, 0.15);
+      color: #a0a0a0;
+    }
+
+    &.active {
+      background-color: rgba($success-color, 0.15);
+      color: $success-color;
+    }
+
+    &.paused {
+      background-color: rgba($warning-color, 0.15);
+      color: $warning-color;
+    }
+
+    &.completed {
+      background-color: rgba($info-color, 0.15);
+      color: $info-color;
+    }
+    
+    &.built {
+      background-color: rgba($success-color, 0.15);
+      color: $success-color;
+    }
+  }
+  
+  // New built status indicator
+  .campaign-details-built {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 1.2rem;
+    background-color: rgba($success-color, 0.15);
+    color: $success-color;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    
+    i {
+      font-size: 1.1rem;
+    }
+  }
+}
+
+// Campaign content tabs - Enhanced styling
+.campaign-details-tabs {
+  display: flex;
+  border-bottom: 1px solid $border-color;
+  margin-bottom: 2rem;
+  font-size: 1.2rem;
+
+  .tab {
+    padding: 1.1rem 2rem;
+    font-weight: 600;
+    color: $text-secondary;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+
+    &:hover {
+      color: $text-color;
+    }
+
+    &.active {
+      color: $primary-color;
+      border-bottom-color: $tab-active-border;
+    }
+  }
+}
+
+/* Product and Person Images Section Containers - New Styles */
+.campaign-details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  margin-top: 1rem;
+}
+
+.campaign-delete-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid $border-color;
+  text-align: center;
+  
+  .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background-color: $danger-color;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    width: auto;
+    max-width: none;
+    justify-content: center;
+    
+    &:hover {
+      background-color: darken($danger-color, 10%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      pointer-events: none;
+      position: relative;
+    }
+    
+    i {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Product/Person Images Sections
+.campaign-images-section {
+  width: 100%;
+  padding: 0 0 2rem 0; // Remove padding from sides, keep bottom padding
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    h2 {
+      font-size: 2rem; // Increased significantly
+      font-weight: 700;
+      color: $text-color;
+      margin: 0;
+    }
+
+    .add-image-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem; // Increased from 0.6rem
+      padding: 0.9rem 1.5rem; // Increased from 0.75rem 1.25rem
+      background-color: $primary-color;
+      color: white;
+      border: none;
+      border-radius: 8px; // Increased from 6px
+      font-weight: 600; // Increased from 500
+      font-size: 1.1rem; // Increased from 1rem
+      cursor: pointer;
+      max-width: 140px;
+      transition: all 0.3s ease; // Improved transition
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); // Enhanced shadow
+      position: relative; // For tooltip
+
+      &:hover {
+        background-color: $primary-dark;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+      }
+      
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: $background-light;
+        box-shadow: none;
+        border: 1px solid $border-color;
+        color: $text-muted;
+        pointer-events: none;
+      }
+      
+      i {
+        font-size: 1rem; // Increased from 0.9rem
+      }
+    }
+  }
+}
+
+// Tooltips for disabled elements
+.locked-tooltip, .tooltip-text {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 50;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px 6px 0;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.8) transparent transparent;
+  }
+}
+
+button:disabled:hover .locked-tooltip,
+button:disabled:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+// Images gallery - Enhanced with bigger images
+.campaign-images-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); // Larger minimum size
+  gap: 2rem; // Increased from 24px
+  
+  .gallery-item {
+    border-radius: 12px; // Increased from 10px
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 4/3; // Changed from 16/10 for better display
+    background-color: $background-light;
+    cursor: pointer;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25); // Enhanced shadow
+    border: 1px solid $border-color;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; // Smoother transition
+    
+    &:hover {
+      transform: translateY(-8px); // More pronounced lift
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35); // Enhanced shadow on hover
+      
+      .image-overlay {
+        opacity: 1;
+      }
+    }
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .image-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent 120px); // Extended gradient
+      padding: 2rem 1.5rem 1.5rem; // Increased padding
+      opacity: 0.9; // More visible by default
+      transition: opacity 0.2s;
+      
+      .image-title {
+        color: white;
+        font-weight: 600; // Increased from 500
+        font-size: 1.2rem; // Increased from 1.1rem
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); // Added text shadow
+      }
+    }
+    
+    &.main-image {
+      grid-column: 1 / span 2;
+      grid-row: 1 / span 2;
+      aspect-ratio: auto;
+      
+      .main-image-badge {
+        position: absolute;
+        top: 16px; // Increased from 12px
+        left: 16px; // Increased from 12px
+        background-color: rgba($primary-color, 0.9);
+        color: white;
+        padding: 8px 16px; // Increased from 6px 12px
+        border-radius: 6px; // Increased from 4px
+        font-size: 0.95rem; // Increased from 0.85rem
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); // Enhanced shadow
+      }
+    }
+  }
+}
+
+// No images placeholder
+.no-images {
+  @include flex-column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 2rem; // Increased from 4rem 2rem
+  background-color: rgba(255, 255, 255, 0.03); // Lighter background
+  border-radius: 14px; // Increased from 10px
+  text-align: center;
+  border: 1px dashed rgba(255, 255, 255, 0.15); // Changed to dashed
+
+  .no-images-icon {
+    font-size: 5.5rem; // Increased from 4.5rem
+    color: rgba(255, 255, 255, 0.15);
+    margin-bottom: 2rem; // Increased from 1.5rem
+    opacity: 0.8; // Increased from 0.6
+  }
+
+  h3 {
+    font-size: 2rem; // Increased from 1.6rem
+    font-weight: 700; // Increased from 600
+    margin-bottom: 1rem; // Increased from 0.75rem
+    color: $text-color;
+  }
+
+  p {
+    color: $text-secondary;
+    margin-bottom: 2.5rem; // Increased from 1.75rem
+    font-size: 1.25rem; // Increased from 1.1rem
+    max-width: 500px;
+    line-height: 1.6;
+  }
+  
+  .add-image-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; // Increased from 0.6rem
+    padding: 0.9rem 1.75rem; // Increased from 0.75rem 1.5rem
+    background-color: $primary-color;
+    color: white;
+    border: none;
+    border-radius: 8px; // Increased from 6px
+    font-weight: 600; // Increased from 500
+    font-size: 1.1rem; // Increased from 1rem
+    cursor: pointer;
+    transition: all 0.3s ease; // Smoother transition
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); // Enhanced shadow
+    position: relative; // For tooltip
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: $background-light;
+      box-shadow: none;
+      color: $text-muted;
+      pointer-events: none;
+    }
+
+    &:hover {
+      background-color: $primary-dark;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35); // Enhanced shadow on hover
+    }
+    
+    i {
+      font-size: 1.1rem; // Increased from 0.9rem
+    }
+  }
+}
+
+// Loading state
+.campaign-details-loading {
+  @include flex-column;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 0; // Increased from 5rem 0
+  height: 70vh; // Increased from 60vh
+
+  .spinner {
+    border: 5px solid rgba(62, 106, 255, 0.2); // Increased from 4px
+    border-left-color: $primary-color;
+    border-radius: 50%;
+    width: 70px; // Increased from 60px
+    height: 70px; // Increased from 60px
+    animation: spin 1s linear infinite;
+    margin-bottom: 2rem; // Increased from 1.5rem
+  }
+  
+  p {
+    font-size: 1.4rem; // Increased from 1.2rem
+    color: $text-secondary;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+}
+
+// Campaign not found
+.campaign-details-not-found {
+  @include flex-column;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 3rem; // Increased from 5rem 2rem
+  text-align: center;
+  height: 70vh; // Increased from 60vh
+
+  .not-found-icon {
+    font-size: 7rem; // Increased from 6rem
+    color: $text-muted;
+    margin-bottom: 2.5rem; // Increased from 2rem
+    opacity: 0.6;
+  }
+
+  h3 {
+    font-size: 2.6rem; // Increased from 2.2rem
+    font-weight: 700; // Increased from 600
+    margin-bottom: 1rem; // Increased from 0.75rem
+    color: $text-color;
+  }
+
+  p {
+    color: $text-secondary;
+    margin-bottom: 2.5rem; // Increased from 2rem
+    font-size: 1.4rem; // Increased from 1.2rem
+    max-width: 550px; // Increased from 500px
+    line-height: 1.6;
+  }
+  
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem; // Increased from 0.6rem
+    padding: 0.9rem 1.75rem; // Increased from 0.75rem 1.5rem
+    background-color: $primary-color;
+    color: white;
+    border: none;
+    border-radius: 8px; // Increased from 6px
+    font-weight: 600; // Increased from 500
+    font-size: 1.1rem; // Increased from 1rem
+    cursor: pointer;
+    transition: all 0.3s ease; // Smoother transition
+    text-decoration: none;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); // Added shadow
+    
+    &:hover {
+      background-color: $primary-dark;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35); // Enhanced shadow on hover
+    }
+  }
+}
+
+// Notification toast
+.campaign-details-notification {
+  position: fixed;
+  top: 2rem; // Increased from 1.5rem
+  right: 2rem; // Increased from 1.5rem
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.75rem; // Increased from 1rem 1.5rem
+  background-color: $background-light;
+  border-radius: 10px; // Increased from 8px
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); // Enhanced shadow
+  z-index: 1000;
+  min-width: 350px; // Increased from 320px
+  max-width: 450px; // Increased from 420px
+  animation: slideInRight 0.4s ease-out;
+  border: 1px solid $border-color;
+
+  &.success {
+    border-left: 5px solid $success-color; // Increased from 4px
+
+    i {
+      color: $success-color;
+    }
+  }
+
+  &.error {
+    border-left: 5px solid $danger-color; // Increased from 4px
+
+    i {
+      color: $danger-color;
+    }
+  }
+
+  .notification-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem; // Increased from 0.75rem
+    font-size: 1.1rem; // Increased from 1rem
+
+    i {
+      font-size: 1.5rem; // Increased from 1.3rem
+    }
+  }
+
+  .close-notification {
+    background: none;
+    border: none;
+    color: $text-muted;
+    cursor: pointer;
+    padding: 0.35rem; // Increased from 0.25rem
+    margin-left: 1.25rem; // Increased from 1rem
+    font-size: 1.25rem; // Increased from 1.1rem
+
+    &:hover {
+      color: $text-color;
+    }
+  }
+}
+
+.campaign-details-models {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+
+// Image Details Modal
+.image-details-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(3px);
+  }
+  
+  .modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 1000px;
+    max-height: 90vh;
+    background-color: $background-card;
+    border-radius: 16px;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+    padding: 2rem;
+    overflow-y: auto;
+    z-index: 1051;
+    animation: modalFadeIn 0.3s ease-out;
+    border: 1px solid $border-color;
+    
+    .modal-close {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: none;
+      border: none;
+      color: $text-secondary;
+      font-size: 1.5rem;
+      cursor: pointer;
+      z-index: 2;
+      
+      &:hover {
+        color: $text-color;
+      }
+    }
+    
+    .modal-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: $text-color;
+    }
+    
+    // Image details content
+    .image-details {
+      display: flex;
+      gap: 2rem;
+      
+      .image-viewer {
+        flex: 1;
+        max-width: 65%;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+        
+        img {
+          width: 100%;
+          height: auto;
+          object-fit: contain;
+          max-height: 70vh;
+        }
+      }
+      
+      .image-info {
+        flex: 1;
+        max-width: 35%;
+        display: flex;
+        flex-direction: column;
+        
+        h3 {
+          font-size: 1.8rem;
+          font-weight: 600;
+          margin-bottom: 1.5rem;
+          color: $text-color;
+        }
+        
+        .image-date {
+          display: flex;
+          align-items: center;
+          color: $text-muted;
+          margin-bottom: 1.5rem;
+          
+          i {
+            margin-right: 0.5rem;
+          }
+        }
+        
+        .image-description {
+          background-color: rgba($background-light, 0.5);
+          padding: 1.5rem;
+          border-radius: 8px;
+          border: 1px solid $border-color;
+          font-size: 1.1rem;
+          line-height: 1.6;
+          color: $text-secondary;
+          margin-bottom: 2rem;
+          max-height: 250px;
+          overflow-y: auto;
+        }
+        
+        .form-group {
+          margin-bottom: 1.5rem;
+          
+          label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+            color: $text-color;
+            font-size: 1.1rem;
+          }
+          
+          input, textarea {
+            width: 100%;
+            padding: 1rem;
+            background-color: $input-bg;
+            border: 1px solid $border-color;
+            border-radius: 8px;
+            color: $text-color;
+            font-size: 1.1rem;
+            
+            &:focus {
+              outline: none;
+              border-color: $primary-color;
+              box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
+            }
+          }
+          
+          textarea {
+            resize: vertical;
+            min-height: 100px;
+          }
+        }
+        
+        .image-actions {
+          display: flex;
+          gap: 1rem;
+          margin-top: auto;
+          
+          button {
+            flex: 1;
+            padding: 0.8rem 1.25rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            position: relative;
+            
+            i {
+              font-size: 1rem;
+            }
+            
+            &.btn-edit {
+              background-color: $primary-color;
+              color: white;
+              border: none;
+              
+              &:hover {
+                background-color: $primary-dark;
+                transform: translateY(-2px);
+              }
+              
+              &:disabled {
+                background-color: $disabled-color;
+                cursor: not-allowed;
+                opacity: 0.7;
+              }
+            }
+            
+            &.btn-delete-image {
+              background-color: rgba($danger-color, 0.1);
+              color: $danger-color;
+              border: 1px solid rgba($danger-color, 0.3);
+              
+              &:hover {
+                background-color: rgba($danger-color, 0.2);
+                transform: translateY(-2px);
+              }
+              
+              &:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+              }
+            }
+            
+            &.btn-save {
+              background-color: $success-color;
+              color: white;
+              border: none;
+              
+              &:hover {
+                background-color: darken($success-color, 5%);
+                transform: translateY(-2px);
+              }
+            }
+            
+            &.btn-cancel {
+              background-color: $background-light;
+              color: $text-color;
+              border: 1px solid $border-color;
+              
+              &:hover {
+                background-color: darken($background-light, 5%);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Add Image Modal
+.add-images-container {
+  width: 100%;
+  
+  // File Upload Stage
+  .file-upload-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    
+    .upload-dropzone {
+      width: 100%;
+      max-width: 600px;
+      height: 300px;
+      border: 2px dashed $border-color;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        border-color: $primary-color;
+        background-color: rgba($primary-color, 0.05);
+      }
+      
+      i {
+        font-size: 4rem;
+        color: $text-muted;
+        margin-bottom: 1.5rem;
+        opacity: 0.6;
+      }
+      
+      h4 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: $text-color;
+      }
+      
+      p {
+        font-size: 1.2rem;
+        color: $text-muted;
+      }
+    }
+  }
+  
+  // Image Review Stage
+  .image-review-stage {
+    width: 100%;
+    
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid $border-color;
+      
+      h4 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: $text-color;
+      }
+    }
+    
+    .review-content {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      
+      .review-image-preview {
+        flex: 1;
+        max-width: 55%;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+        border: 1px solid $border-color;
+        background-color: $background-light;
+        
+        img {
+          width: 100%;
+          height: auto;
+          object-fit: contain;
+          max-height: 400px;
+        }
+      }
+      
+      .review-form {
+        flex: 1;
+        max-width: 45%;
+        
+        .form-group {
+          margin-bottom: 1.5rem;
+          
+          label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+            color: $text-color;
+            font-size: 1.1rem;
+            
+            .ai-generate-btn {
+              display: inline-flex;
+              align-items: center;
+              gap: 0.4rem;
+              padding: 0.5rem 0.8rem;
+              background-color: rgba($info-color, 0.1);
+              color: $info-color;
+              border: 1px solid rgba($info-color, 0.3);
+              border-radius: 6px;
+              font-size: 0.9rem;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              
+              &:hover {
+                background-color: rgba($info-color, 0.2);
+                transform: translateY(-2px);
+              }
+              
+              i {
+                font-size: 0.9rem;
+              }
+            }
+          }
+          
+          input, textarea {
+            width: 100%;
+            padding: 1rem;
+            background-color: $input-bg;
+            border: 1px solid $border-color;
+            border-radius: 8px;
+            color: $text-color;
+            font-size: 1.1rem;
+            
+            &:focus {
+              outline: none;
+              border-color: $primary-color;
+              box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
+            }
+          }
+          
+          textarea {
+            resize: vertical;
+            min-height: 150px;
+          }
+        }
+      }
+    }
+    
+    .review-navigation {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 1.5rem;
+      border-top: 1px solid $border-color;
+      
+      .nav-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.9rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        
+        &.prev {
+          background-color: $background-light;
+          color: $text-color;
+          border: 1px solid $border-color;
+          
+          &:hover:not(:disabled) {
+            background-color: darken($background-light, 5%);
+          }
+          
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+        }
+        
+        &.next {
+          background-color: $primary-color;
+          color: white;
+          border: none;
+          
+          &:hover {
+            background-color: $primary-dark;
+            transform: translateY(-2px);
+          }
+        }
+        
+        &.finish {
+          background-color: $success-color;
+          color: white;
+          border: none;
+          
+          &:hover {
+            background-color: darken($success-color, 5%);
+            transform: translateY(-2px);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Media queries for responsiveness */
+// Add CSS to handle responsive behavior
+@media screen and (max-width: 992px) {
+  // Adjust notification to not overlap with chat button
+  .campaign-details-notification {
+    width: calc(100% - 4rem);
+    right: 2rem;
+    max-width: 600px;
+  }
+  
+  // Adjust button positions for tablet
+  .header-chat-button,
+  .main-image-chat-button,
+  .build-model-btn {
+    font-size: 1.1rem;
+    padding: 0.7rem 1rem;
+    min-width: 140px;
+  }
+  
+  // Add more space for the back button
+  .campaign-details-back {
+    margin-top: 70px;
+    flex-direction: column;
+    align-items: flex-start;
+    
+    .back-button-actions {
+      margin-top: 0.5rem;
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  // Stack buttons vertically on mobile
+  .build-model-btn,
+  .main-image-chat-button {
+    font-size: 1rem;
+    padding: 0.6rem 0.8rem;
+    min-width: 130px;
+  }
+  
+  .campaign-details-back {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-top: 70px;
+    
+    .back-link {
+      margin-bottom: 0.5rem;
+    }
+    
+    .back-button-actions {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  
+  // Add more space to the image
+  .campaign-details-image {
+    margin-left: 0;
+    max-width: 100%;
+  }
+  
+  // Adjust notification for mobile
+  .campaign-details-notification {
+    top: 1.5rem;
+    left: 1.5rem;
+    right: 1.5rem;
+    width: calc(100% - 3rem);
+    min-width: 0;
+  }
+}
+
+/* CSS for Pending Error Modal */
+.pending-error-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pending-error-content {
+  position: relative;
+  background-color: $background-card;
+  border-radius: 14px;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+  width: 90%;
+  max-width: 550px;
+  padding: 2.5rem;
+  z-index: 1101;
+  animation: scaleIn 0.3s ease-out;
+  border: 1px solid $border-color;
+  border-left: 5px solid $danger-color;
+}
+
+.pending-error-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+  
+  i {
+    font-size: 2.5rem;
+    color: $danger-color;
+  }
+  
+  h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: $text-color;
+    margin: 0;
+  }
+}
+
+.pending-error-body {
+  margin-bottom: 2rem;
+  
+  p {
+    color: $text-secondary;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.pending-error-footer {
+  display: flex;
+  justify-content: flex-end;
+  
+  .btn-ok {
+    padding: 0.9rem 1.75rem;
+    background-color: $danger-color;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    
+    &:hover {
+      background-color: darken($danger-color, 7%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

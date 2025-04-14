@@ -1,0 +1,107 @@
+// src/assets/scss/admin/_variables.scss
+// Admin panel theme variables
+
+// Typography
+$admin-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$admin-font-size-sm: 0.875rem;
+$admin-font-size-base: 1rem;
+$admin-font-size-lg: 1.125rem;
+$admin-font-size-xl: 1.25rem;
+$admin-font-size-xxl: 1.5rem;
+$admin-font-weight-normal: 400;
+$admin-font-weight-medium: 500;
+$admin-font-weight-semibold: 600;
+$admin-font-weight-bold: 700;
+
+// Colors
+$admin-primary: #1e2d40;         // Dark blue header color
+$admin-secondary: #2c3e50;       // Slightly lighter shade for secondary elements
+$admin-success: #4caf50;         // Green for verified status
+$admin-warning: #f39c12;         // Orange/amber for pending status
+$admin-danger: #e74c3c;          // Red for delete actions
+$admin-info: #3498db;            // Blue for information
+$admin-light: #f8f9fa;           // Light background color
+$admin-dark: #2c3e50;            // Dark text color
+$admin-border: #e0e0e0;          // Light border color
+$admin-header-text: white;       // Header text color
+
+// Spacing
+$admin-spacing-xs: 0.25rem;
+$admin-spacing-sm: 0.5rem;
+$admin-spacing-md: 1rem;
+$admin-spacing-lg: 1.5rem;
+$admin-spacing-xl: 2rem;
+
+// Borders & Shadows
+$admin-border-radius: 0.25rem;
+$admin-shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+$admin-shadow-md: 0 3px 6px rgba(0,0,0,0.1);
+$admin-shadow-lg: 0 5px 12px rgba(0,0,0,0.12);
+
+// Mixins
+@mixin admin-card {
+  background-color: white;
+  border-radius: $admin-border-radius;
+  box-shadow: $admin-shadow-sm;
+  border: 1px solid $admin-border;
+  height: 100%;
+}
+
+@mixin admin-btn-primary {
+  background-color: $admin-primary;
+  border-color: $admin-primary;
+  color: white;
+  
+  &:hover, &:focus {
+    background-color: darken($admin-primary, 10%);
+    border-color: darken($admin-primary, 10%);
+  }
+}
+
+@mixin admin-btn-outline {
+  background-color: transparent;
+  border-color: $admin-border;
+  color: $admin-dark;
+  
+  &:hover, &:focus {
+    background-color: rgba($admin-primary, 0.05);
+  }
+}
+
+@mixin admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th {
+    background-color: #f5f7f9;
+    font-weight: $admin-font-weight-semibold;
+    text-align: left;
+    color: $admin-dark;
+    border-bottom: 1px solid $admin-border;
+  }
+  
+  td, th {
+    padding: $admin-spacing-md;
+  }
+  
+  tr {
+    border-bottom: 1px solid $admin-border;
+    
+    &:hover {
+      background-color: rgba($admin-primary, 0.02);
+    }
+  }
+}
+
+@mixin admin-badge {
+  display: inline-block;
+  padding: 0.25em 0.6em;
+  font-size: 0.75em;
+  font-weight: $admin-font-weight-semibold;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 50px;
+  color: white;
+}
