@@ -24,21 +24,26 @@ const __dirname = dirname(__filename);
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Improved CORS configuration
+// app.use(cors({
+//   origin: function(origin, callback) {
+//     const allowedOrigins = isProduction 
+//       ? [process.env.FRONTEND_URL?.replace(/\/$/, '')] // Remove trailing slash if present 
+//       : ['http://localhost:3000', 'http://127.0.0.1:3000','https://ad-genie.vercel.app'];
+    
+//     // Allow requests with no origin (like mobile apps or curl requests)
+//     if (!origin) return callback(null, true);
+    
+//     if (allowedOrigins.indexOf(origin) !== -1 || !isProduction) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   methods: ["GET", "POST", "PUT", "DELETE"],
+//   credentials: true
+// }));
 app.use(cors({
-  origin: function(origin, callback) {
-    const allowedOrigins = isProduction 
-      ? [process.env.FRONTEND_URL?.replace(/\/$/, '')] // Remove trailing slash if present 
-      : ['http://localhost:3000', 'http://127.0.0.1:3000','https://ad-genie.vercel.app'];
-    
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || !isProduction) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: ['https://ad-genie.vercel.app', 'http://localhost:3000'],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
