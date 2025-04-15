@@ -23,18 +23,18 @@ const __dirname = dirname(__filename);
 // Environment variables
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Improved CORS configuration
 app.use(cors({
   origin: function(origin, callback) {
-    // List all allowed origins
+    // List all allowed origins explicitly (wildcards don't work with credentials:true)
     const allowedOrigins = [
-      '*'
+      'http://localhost:3000',
+      'https://ad-genie.vercel.app'
     ];
     
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1 || !process.env.NODE_ENV === 'production') {
+    if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
