@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import path from 'path';
+import fs from 'fs';
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import protectedRoutes from "./routes/protectedRoutes.js";
@@ -22,10 +24,11 @@ const __dirname = dirname(__filename);
 
 // Environment variables
 const isProduction = process.env.NODE_ENV === 'production';
+const PORT = process.env.PORT || 5000;
 
 // Improved CORS configuration
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
+  origin: isProduction 
     ? process.env.FRONTEND_URL 
     : ['http://localhost:3000', 'http://127.0.0.1:3000','https://ad-genie.vercel.app'],
   methods: ["GET", "POST", "PUT", "DELETE"],
@@ -33,7 +36,12 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use('/data', express.static(`${__dirname}/data`));
+
+// Configure static file serving for local development
+// In production (Vercel), we'll use Vercel Blob instead
+if (!isProduction) {
+  app.use('/data', express.static(path.join(__dirname, 'data')));
+}
 
 // Add this to your app.js, BEFORE the main encrypted gateway
 app.post("/api/verifyCampaign", async (req, res) => {
@@ -94,6 +102,7 @@ app.post("/", async (req, res) => {
       try {
         const fileUrl = await handleFileUpload(req);
         req.fileUrl = fileUrl; // Store for use in route handlers
+        console.log(`File uploaded successfully: ${fileUrl}`);
       } catch (uploadError) {
         console.error("File upload error:", uploadError);
         return res.status(400).json({
@@ -172,5 +181,12 @@ app.post("/", async (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode.`));
+// Don't run the server in production (Vercel serverless environment)
+// Only start server in development environment
+if (!isProduction) {
+  app.listen(PORT, () => console.log(`Server running on port ${PORT} in development mode`));
+} else {
+  console.log('Running in production mode (Vercel serverless)');
+}
+
+export default app;
