@@ -731,6 +731,7 @@ export const getResponse = async (req, res) => {
 
 
 
+
 export const updateCampaignStatus = async (req, res) => {
   try {
     // Extract data from request body
@@ -738,7 +739,9 @@ export const updateCampaignStatus = async (req, res) => {
       campain_id, 
       campain_name, 
       model_name,
-      status
+      status,
+      model_id,
+      product_id
     } = req.body;
 
     // Validate required fields
@@ -751,6 +754,19 @@ export const updateCampaignStatus = async (req, res) => {
       return res.status(400).json({ message: "Invalid status. Status must be 'ready' to mark campaign as built" });
     }
 
+    // Determine campaign type
+    let campaignType = null;
+    if (model_id === true && product_id !== true) {
+      campaignType = 'MODEL';
+    } else if (product_id === true && model_id !== true) {
+      campaignType = 'PRODUCT';
+    } else if (model_id === true && product_id === true) {
+      campaignType = 'HYBRID';
+    } else {
+      // Default case if neither is specified
+      campaignType = 'STANDARD';
+    }
+
     // Update campaign in database
     const updatedCampaign = await prisma.campaigns.update({
       where: {
@@ -761,7 +777,10 @@ export const updateCampaignStatus = async (req, res) => {
         model_name: model_name, // Update model_name if provided
         status: 'ACTIVE', // Set status to ACTIVE based on CampaignStatus enum
         is_built: true, // Mark as built
-        build_date: new Date() // Set build date to current timestamp
+        build_date: new Date(), // Set build date to current timestamp
+        // campaign_type: campaignType, // Set the campaign type
+        // is_model_campaign: model_id === true, // Boolean flag for model campaign
+        // is_product_campaign: product_id === true // Boolean flag for product campaign
       }
     });
 
@@ -769,10 +788,29 @@ export const updateCampaignStatus = async (req, res) => {
     return res.status(200).json({ 
       success: true, 
       message: "Campaign status updated successfully",
-      data: updatedCampaign
+      data: {
+        ...updatedCampaign,
+        campaign_type: campaignType,
+        is_model_campaign: model_id === true,
+        is_product_campaign: product_id === true
+      }
     });
   } catch (error) {
     console.error("Error updating campaign status:", error);
-    return res.status(500).json({ message: error.message || "An error occurred while updating campaign status" });
+    
+    // Handle specific database errors
+    if (error.code === 'P2025') {
+      return res.status(404).json({ message: "Campaign not found" });
+    }
+    
+    // Handle validation errors from prisma
+    if (error.code === 'P2002') {
+      return res.status(400).json({ message: "A campaign with this information already exists" });
+    }
+    
+    return res.status(500).json({ 
+      message: error.message || "An error occurred while updating campaign status",
+      error_code: error.code || null
+    });
   }
 };
