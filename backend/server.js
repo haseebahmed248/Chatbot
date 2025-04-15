@@ -24,7 +24,7 @@ const __dirname = dirname(__filename);
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? process.env.FRONTEND_URL 
-    : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    : ['http://localhost:3000', 'http://127.0.0.1:3000','https://ad-genie.vercel.app'],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
@@ -41,11 +41,19 @@ app.post("/api/verifyCampaign", async (req, res) => {
     return res.status(500).json({ message: error.message || "An error occurred" });
   }
 });
+app.post('/api/buildCampaign', async(req,res)=>{
+  try {
+    return campaignRoutes(req, res, "buildCampaign");
+  } catch (error) {
+    console.error("Error in Build campaign:", error);
+    return res.status(500).json({ message: error.message || "An error occurred" });
+  }
+})
 app.put('/api/updateCampaignStatus', async(req,res)=>{
   try {
     return campaignRoutes(req, res, "updateCampaignStatus");
   } catch (error) {
-    console.error("Error in verify campaign:", error);
+    console.error("Error in Update campaign Status:", error);
     return res.status(500).json({ message: error.message || "An error occurred" });
   }
 })
@@ -140,8 +148,5 @@ app.post("/", async (req, res) => {
   });
 });
 
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}.`));
-}
-export default app;
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}.`));
