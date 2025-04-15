@@ -21,11 +21,28 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 
+// Place this BEFORE any routes
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, x-bypass-encryption, x-module, x-endpoint, Authorization');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
+
+// Keep your existing cors middleware if you want
 app.use(cors({
-  origin: ['*',process.env.FRONTEND_URL, 'https://ad-genie.vercel.app'],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],  // Added OPTIONS for preflight
-  credentials: false
+  origin: '*',
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true
 }));
+
+
+
 app.use(express.json());
 app.use('/data', express.static(`${__dirname}/data`));
 
