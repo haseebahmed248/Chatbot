@@ -12,13 +12,16 @@ import creditRoutes from "./routes/creditRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import encryptData from "./utils/encryptData.js";
 import decryptData from "./utils/decryptData.js";
-import uploadImage from "./utils/uploadImage.js";
+import uploadImage, { handleFileUpload } from "./utils/uploadImage.js";
 
 dotenv.config();
 const app = express();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Environment variables
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Improved CORS configuration
 app.use(cors({
@@ -41,6 +44,7 @@ app.post("/api/verifyCampaign", async (req, res) => {
     return res.status(500).json({ message: error.message || "An error occurred" });
   }
 });
+
 app.post('/api/buildCampaign', async(req,res)=>{
   try {
     return campaignRoutes(req, res, "buildCampaign");
@@ -48,7 +52,8 @@ app.post('/api/buildCampaign', async(req,res)=>{
     console.error("Error in Build campaign:", error);
     return res.status(500).json({ message: error.message || "An error occurred" });
   }
-})
+});
+
 app.put('/api/updateCampaignStatus', async(req,res)=>{
   try {
     return campaignRoutes(req, res, "updateCampaignStatus");
@@ -56,7 +61,7 @@ app.put('/api/updateCampaignStatus', async(req,res)=>{
     console.error("Error in Update campaign Status:", error);
     return res.status(500).json({ message: error.message || "An error occurred" });
   }
-})
+});
 
 // Single gateway for all API requests
 app.post("/", async (req, res) => {
@@ -74,6 +79,7 @@ app.post("/", async (req, res) => {
       return res.status(500).json({ message: error.message || "An error occurred" });
     }
   }
+  
   uploadImage.single("image")(req, res, async (err) => {
     // Handle file upload errors
     if (err) {
@@ -81,6 +87,19 @@ app.post("/", async (req, res) => {
       return res.status(400).json({ 
         data: encryptData({ message: "File upload error: " + err.message }) 
       });
+    }
+    
+    // Process file upload if present
+    if (req.file) {
+      try {
+        const fileUrl = await handleFileUpload(req);
+        req.fileUrl = fileUrl; // Store for use in route handlers
+      } catch (uploadError) {
+        console.error("File upload error:", uploadError);
+        return res.status(400).json({
+          data: encryptData({ message: "File upload error: " + uploadError.message })
+        });
+      }
     }
     
     try {
@@ -107,6 +126,11 @@ app.post("/", async (req, res) => {
 
       // Set req.body = data for controllers
       req.body = data;
+      
+      // Add file URL to the body if a file was uploaded
+      if (req.fileUrl) {
+        req.body.fileUrl = req.fileUrl;
+      }
 
       // Route to the correct module
       switch (module) {
@@ -149,4 +173,4 @@ app.post("/", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}.`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode.`));
