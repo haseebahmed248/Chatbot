@@ -25,11 +25,24 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // Improved CORS configuration
 app.use(cors({
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
-    : ['*','https://ad-genie.vercel.app'],
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: function(origin, callback) {
+    // List all allowed origins
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://ad-genie.vercel.app',
+      // Add any other origins you need
+    ];
+    
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || !process.env.NODE_ENV === 'production') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
 }));
 
