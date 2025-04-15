@@ -150,7 +150,16 @@ export const addCampaign = async (req, res) => {
       return res.status(403).json({ data: encryptedResponse });
     }
     
-    const imageUrl = `${process.env.BACKEND_URL}/data/Pictures/${image.filename}`;
+    // Important: Use the fileUrl from handleFileUpload instead of constructing the URL manually
+    if (!req.fileUrl) {
+      console.error("Missing fileUrl after image upload", { image });
+      const encryptedResponse = encryptData({ message: "Error processing uploaded image." });
+      return res.status(500).json({ data: encryptedResponse });
+    }
+    
+    // Use req.fileUrl which is set by handleFileUpload in your server.js
+    const imageUrl = req.fileUrl;
+    console.log(`Adding campaign with image URL: ${imageUrl}`);
     
     // Format selected models as JSON string
     const formattedSelectedModels = formatSelectedModels(selectedModels);
@@ -222,7 +231,16 @@ export const addCampaignImage = async (req, res) => {
       return res.status(400).json({ data: encryptedResponse });
     }
     
-    const imageUrl = `${process.env.BACKEND_URL}/data/Pictures/${image.filename}`;
+    // Important: Use the fileUrl from handleFileUpload instead of constructing the URL manually
+    if (!req.fileUrl) {
+      console.error("Missing fileUrl after image upload", { image });
+      const encryptedResponse = encryptData({ message: "Error processing uploaded image." });
+      return res.status(500).json({ data: encryptedResponse });
+    }
+    
+    // Use req.fileUrl which is set by handleFileUpload in your server.js
+    const imageUrl = req.fileUrl;
+    console.log(`Adding campaign image with URL: ${imageUrl}`);
     
     const newImage = await prisma.campaign_images.create({
       data: {
@@ -486,8 +504,16 @@ export const updateCampaign = async (req, res) => {
 
     // If a new image is uploaded, update the image and delete the old one
     if (newImage) {
+      // Important: Use the fileUrl from handleFileUpload instead of constructing the URL manually
+      if (!req.fileUrl) {
+        console.error("Missing fileUrl after new image upload", { newImage });
+        const encryptedResponse = encryptData({ message: "Error processing uploaded image." });
+        return res.status(500).json({ data: encryptedResponse });
+      }
+      
       deleteImage(imageUrl); // Delete the old image
-      imageUrl = `${process.env.BACKEND_URL}/data/Pictures/${newImage.filename}`;
+      imageUrl = req.fileUrl; // Use the fileUrl set by handleFileUpload
+      console.log(`Updating campaign with new image URL: ${imageUrl}`);
     }
 
     // Ensure we have at least one model selected
@@ -543,7 +569,6 @@ export const updateCampaign = async (req, res) => {
     res.status(500).json({ data: encryptedResponse });
   }
 };
-
 
 export const buildCampaign = async (req, res) => {
   const { campaignId, userId } = req.body;
@@ -611,7 +636,10 @@ export const buildCampaign = async (req, res) => {
 
     // Extract file paths from image URLs
     const imagePaths = images.map(img => {
-      const filename = path.basename(img.url);
+      // Get filename from URL
+      const urlObj = new URL(img.url);
+      const pathname = urlObj.pathname;
+      const filename = path.basename(pathname);
       return `${process.env.IMAGE_STORAGE_PATH || './data/Pictures'}/${filename}`;
     });
 
@@ -629,7 +657,10 @@ export const buildCampaign = async (req, res) => {
     try {
       // Create an array with all image paths, types, and descriptions
       const allImagesWithMetadata = images.map(img => {
-        const filename = path.basename(img.url);
+        // Get filename from URL
+        const urlObj = new URL(img.url);
+        const pathname = urlObj.pathname;
+        const filename = path.basename(pathname);
         const filePath = `${process.env.IMAGE_STORAGE_PATH || './data/Pictures'}/${filename}`;
         const type = img.title.toLowerCase().includes('product') ? 'product' : 'person';
         
@@ -644,6 +675,20 @@ export const buildCampaign = async (req, res) => {
       // Get all image paths in a flat array
       const allImagePaths = allImagesWithMetadata.map(img => img.path);
       
+      // Get campaign owner email and username
+      const campaignOwner = await prisma.users.findUnique({
+        where: {
+          id: parseInt(userId)
+        },
+        select: {
+          username: true,
+          email: true
+        }
+      });
+      
+      const ownerUsername = campaignOwner?.username || '';
+      const ownerEmail = campaignOwner?.email || '';
+      
       // Make a single call with all images
       await pythonApiMiddleware.sendImagesToBackend(
         campaignId.toString(),
@@ -654,11 +699,14 @@ export const buildCampaign = async (req, res) => {
         // Pass the descriptions
         allImagesWithMetadata.map(img => img.description),
         // Pass the titles
-        allImagesWithMetadata.map(img => img.title)
+        allImagesWithMetadata.map(img => img.title),
+        // Pass the owner username and email
+        ownerUsername,
+        ownerEmail
       );
       
       // Notify Python to build the campaign with all images
-      await pythonApiMiddleware.notifyBuildCampaign(campaignId.toString());
+      // await pythonApiMiddleware.notifyBuildCampaign(campaignId.toString());
       
     } catch (pythonError) {
       console.error("Error communicating with Python backend:", pythonError);
@@ -728,8 +776,6 @@ export const getResponse = async (req, res) => {
     return res.status(500).json({ message: error.message || "An error occurred" });
   }
 }
-
-
 
 
 export const updateCampaignStatus = async (req, res) => {
