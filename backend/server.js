@@ -20,17 +20,12 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Environment variables
-const isProduction = process.env.NODE_ENV === 'production';
 
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
-    : ['*','https://ad-genie.vercel.app'],
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: [process.env.FRONTEND_URL, 'https://ad-genie.vercel.app'],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],  // Added OPTIONS for preflight
   credentials: true
 }));
-
 app.use(express.json());
 app.use('/data', express.static(`${__dirname}/data`));
 
