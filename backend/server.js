@@ -24,7 +24,7 @@ const __dirname = dirname(__filename);
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? process.env.FRONTEND_URL 
-    : ['*','http://localhost:3000', 'http://127.0.0.1:3000','https://ad-genie.vercel.app'],
+    : ['*','https://ad-genie.vercel.app'],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
