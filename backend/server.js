@@ -22,9 +22,9 @@ const __dirname = dirname(__filename);
 
 
 app.use(cors({
-  origin: [process.env.FRONTEND_URL, 'https://ad-genie.vercel.app'],
+  origin: ['*',process.env.FRONTEND_URL, 'https://ad-genie.vercel.app'],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],  // Added OPTIONS for preflight
-  credentials: true
+  credentials: false
 }));
 app.use(express.json());
 app.use('/data', express.static(`${__dirname}/data`));
