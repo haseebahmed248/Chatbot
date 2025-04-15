@@ -23,7 +23,6 @@ const __dirname = dirname(__filename);
 // Environment variables
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Improved CORS configuration
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? process.env.FRONTEND_URL 
