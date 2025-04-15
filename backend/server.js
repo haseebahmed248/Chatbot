@@ -28,9 +28,7 @@ app.use(cors({
   origin: function(origin, callback) {
     // List all allowed origins
     const allowedOrigins = [
-      'http://localhost:3000',
-      'https://ad-genie.vercel.app',
-      // Add any other origins you need
+      '*'
     ];
     
     // Allow requests with no origin (like mobile apps or curl requests)
