@@ -35,8 +35,8 @@ const CampaignDetails = () => {
   // Active tab state
   const [activeTab, setActiveTab] = useState<'product' | 'person'>('product');
 
-  // Model build state
-  const [modelState, setModelState] = useState<'disabled' | 'ready' | 'processing' | 'success'>('disabled');
+  // Model build state - Added 'pending' state
+  const [modelState, setModelState] = useState<'disabled' | 'ready' | 'processing' | 'pending' | 'success'>('disabled');
 
   // Image modal states
   const [selectedImage, setSelectedImage] = useState<CampaignImage | null>(null);
@@ -111,6 +111,40 @@ const CampaignDetails = () => {
   // Check if campaign is pending
   const isPendingCampaign = () => {
     return currentCampaign?.status === 'PENDING';
+  };
+
+  // Check if campaign is rejected
+  const isRejectedCampaign = () => {
+    return currentCampaign?.status === 'REJECTED';
+  };
+
+  // Get campaign status display info
+  const getCampaignStatusInfo = () => {
+    const statusMap: any = {
+      'PENDING': {
+        icon: 'fa-clock',
+        text: 'Pending Approval',
+        class: 'pending'
+      },
+      'APPROVED': {
+        icon: 'fa-check-circle',
+        text: 'Approved',
+        class: 'approved'
+      },
+      'REJECTED': {
+        icon: 'fa-times-circle',
+        text: 'Rejected',
+        class: 'rejected'
+      },
+      'ACTIVE': {
+        icon: 'fa-check-circle',
+        text: 'Active',
+        class: 'active'
+      }
+    };
+    
+    const campaignStatus = currentCampaign?.status || 'PENDING';
+    return statusMap[campaignStatus] || statusMap['PENDING'];
   };
 
   // Get model icon based on model type
@@ -567,7 +601,7 @@ const CampaignDetails = () => {
     return currentCampaign?.is_built === true;
   };
 
-  // Handle building the model - UPDATED to not redirect
+  // Handle building the model - UPDATED to set to pending state
   const handleBuildModel = async () => {
     if (modelState !== 'ready' || !id) return;
     
@@ -576,18 +610,20 @@ const CampaignDetails = () => {
       return;
     }
     
-    // Set to processing state
+    // Set to processing state during API call
     setModelState('processing');
     
     try {
       // Call the real API to build the campaign
       await dispatch(buildCampaign(id)).unwrap();
       
-      // Set success state
-      setModelState('success');
-      showNotification("Campaign built successfully! You can now chat with your campaign.", "success");
+      // Set pending state after successful API call - waiting for admin approval
+      setModelState('pending');
+      showNotification("Campaign submitted for building. It will be available once an administrator approves it.", "success");
       
-      // No redirect - stay on the same page
+      // Refresh campaign details to show the pending status
+      dispatch(fetchCampaignDetails(id));
+      
     } catch (error: any) {
       // Set back to ready state if there was an error
       setModelState('ready');
@@ -597,11 +633,6 @@ const CampaignDetails = () => {
 
   // Handle chat with campaign
   const handleChatWithCampaign = () => {
-    if (isPendingCampaign()) {
-      setShowPendingError(true);
-      return;
-    }
-    
     if (id) {
       navigate(`/image-generator/${id}`);
     }
@@ -609,21 +640,31 @@ const CampaignDetails = () => {
 
   // Check if model can be built (has both product and person images)
   useEffect(() => {
-    if (productImages.length > 0 && personImages.length > 0) {
-      if (modelState === 'disabled') {
+    if (currentCampaign?.status === 'APPROVED' && isCampaignBuilt()) {
+      // Campaign is fully approved and built
+      setModelState('success');
+    } else if (currentCampaign?.status === 'APPROVED' && !isCampaignBuilt()) {
+      // Approved but not built yet
+      if (productImages.length > 0 && personImages.length > 0) {
         setModelState('ready');
+      } else {
+        setModelState('disabled');
       }
+    } else if (currentCampaign?.status === 'PENDING' && isCampaignBuilt()) {
+      // Campaign is built but waiting for admin approval
+      setModelState('pending');
+    } else if (currentCampaign?.status === 'REJECTED') {
+      // Campaign is rejected
+      setModelState('disabled');
     } else {
-      if (modelState !== 'disabled' && modelState !== 'success') {
+      // Default case - check if we have enough images
+      if (productImages.length > 0 && personImages.length > 0) {
+        setModelState('ready');
+      } else {
         setModelState('disabled');
       }
     }
-    
-    // Set success state if campaign is already built
-    if (isCampaignBuilt() && modelState !== 'success') {
-      setModelState('success');
-    }
-  }, [productImages.length, personImages.length, modelState, currentCampaign]);
+  }, [productImages.length, personImages.length, currentCampaign]);
 
   // Current file being reviewed in the upload process
   const currentFileId = `file-${currentFileIndex}`;
@@ -691,7 +732,7 @@ const CampaignDetails = () => {
   const modelIcon = getModelIcon(modelName);
   const modelClass = getModelClass(modelName);
   const mainImage = currentCampaign.image_url || currentCampaign.image || '';
-  const campaignStatus = currentCampaign.status || 'active';
+  const statusInfo = getCampaignStatusInfo();
 
   return (
     <div className={`main-center-content-m-left ${themeSidebarToggle ? "collapsed" : ""}`}>
@@ -709,6 +750,26 @@ const CampaignDetails = () => {
             >
               <i className="fa-solid fa-times"></i>
             </button>
+          </div>
+        )}
+        
+        {/* Campaign Status Banner - NEW */}
+        {isPendingCampaign() && (
+          <div className="campaign-status-banner pending">
+            <i className="fa-solid fa-clock"></i>
+            <span>This campaign is awaiting administrator approval. You cannot modify it until it's approved.</span>
+          </div>
+        )}
+        
+        {isRejectedCampaign() && (
+          <div className="campaign-status-banner rejected">
+            <i className="fa-solid fa-times-circle"></i>
+            <span>This campaign has been rejected. Please check admin notes for details.</span>
+            {/* {currentCampaign.admin_notes && (
+              <div className="admin-notes">
+                <strong>Admin Notes:</strong> {currentCampaign.admin_notes}
+              </div>
+            )} */}
           </div>
         )}
         
@@ -741,12 +802,18 @@ const CampaignDetails = () => {
             Back to Campaigns
           </Link>
           
-          {/* Only show Build Button if not built */}
-          {!isCampaignBuilt() && (
+          {/* Status info pills */}
+          <div className={`campaign-status-pill ${statusInfo.class}`}>
+            <i className={`fa-solid ${statusInfo.icon}`}></i>
+            {statusInfo.text}
+          </div>
+          
+          {/* Build Model Button - UPDATED for states */}
+          {!isCampaignBuilt() && currentCampaign.status === 'APPROVED' && (
             <button 
               className={`build-model-btn ${modelState}`}
               onClick={handleBuildModel}
-              disabled={modelState === 'disabled' || modelState === 'processing' || isPendingCampaign()}
+              disabled={modelState === 'disabled' || modelState === 'processing' || modelState === 'pending' || isPendingCampaign()}
             >
               {modelState === 'disabled' ? (
                 <>
@@ -763,29 +830,37 @@ const CampaignDetails = () => {
                   <i className="fa-solid fa-spinner fa-spin"></i>
                   Processing...
                 </>
+              ) : modelState === 'pending' ? (
+                <>
+                  <i className="fa-solid fa-clock"></i>
+                  Pending Admin Approval
+                </>
               ) : (
                 <>
                   <i className="fa-solid fa-check"></i>
                   Built Successfully
                 </>
               )}
-              {isPendingCampaign() && <span className="tooltip-text">Campaign needs to be approved first</span>}
             </button>
           )}
           
-          {/* Add Built Successfully badge if built */}
-          {isCampaignBuilt() && (
-            <div className="main-image-chat-button">
-              <button
-                className="main-image-chat-button"
-                onClick={handleChatWithCampaign}
-                disabled={isPendingCampaign()}
-              >
-                <i className="fa-solid fa-comments"></i>
-                Chat with Campaign
-                {isPendingCampaign() && <span className="tooltip-text">Campaign needs to be approved first</span>}
-              </button>
+          {/* Pending Build State - NEW */}
+          {modelState === 'pending' && !isCampaignBuilt() && (
+            <div className="build-status-info pending">
+              <i className="fa-solid fa-clock"></i>
+              <span>Build requested. Waiting for admin approval.</span>
             </div>
+          )}
+          
+          {/* Chat Button - Only show if campaign is ACTIVE and built */}
+          {isCampaignBuilt() && currentCampaign.status === 'ACTIVE' && (
+            <button
+              className="main-image-chat-button"
+              onClick={handleChatWithCampaign}
+            >
+              <i className="fa-solid fa-comments"></i>
+              Chat with Campaign
+            </button>
           )}
         </div>
         
@@ -845,9 +920,15 @@ const CampaignDetails = () => {
                 <i className="fa-regular fa-calendar"></i>
                 Created {formatDate(currentCampaign.created_at || currentCampaign.createdAt || '')}
               </div>
-              <div className={`campaign-details-status ${campaignStatus.toLowerCase()}`}>
-                {campaignStatus}
-              </div>
+              
+              {/* Display admin info if available */}
+              {/* {currentCampaign.adminInfo && (
+                <div className="campaign-details-admin">
+                  <i className="fa-solid fa-user-shield"></i>
+                  Reviewed by: {currentCampaign.adminInfo.username}
+                </div>
+              )} */}
+              
               {isCampaignBuilt() && (
                 <div className="campaign-details-built">
                   <i className="fa-solid fa-lock"></i>
@@ -855,6 +936,14 @@ const CampaignDetails = () => {
                 </div>
               )}
             </div>
+            
+            {/* Admin notes display */}
+            {/* {currentCampaign.admin_notes && (
+              <div className="campaign-admin-notes">
+                <h4><i className="fa-solid fa-clipboard-list"></i> Admin Notes:</h4>
+                <p>{currentCampaign.admin_notes}</p>
+              </div>
+            )} */}
           </div>
 
           <div className="campaign-details-image">
@@ -863,8 +952,16 @@ const CampaignDetails = () => {
                 <img src={mainImage} alt={currentCampaign.name} />
                 <div className="main-image-badge">Main Image</div>
                 
-                {/* Add chat button directly on the image if campaign is built */}
-                {isCampaignBuilt() && !isPendingCampaign() && (
+                {/* Add verification overlay if pending */}
+                {isPendingCampaign() && (
+                  <div className="image-verification-overlay">
+                    <i className="fa-solid fa-clock"></i>
+                    <span>Awaiting Verification</span>
+                  </div>
+                )}
+                
+                {/* Add chat button directly on the image if campaign is built and ACTIVE */}
+                {isCampaignBuilt() && currentCampaign.status === 'ACTIVE' && (
                   <button 
                     className="main-image-chat-button"
                     onClick={handleChatWithCampaign}
@@ -932,6 +1029,13 @@ const CampaignDetails = () => {
                           {image.title || "Untitled Product"}
                         </div>
                       </div>
+                      
+                      {/* Lock indicator for built campaigns */}
+                      {isCampaignBuilt() && (
+                        <div className="image-lock-badge">
+                          <i className="fa-solid fa-lock"></i>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -954,6 +1058,8 @@ const CampaignDetails = () => {
                   </button>
                 </div>
               )}
+              
+              
               
               {/* Delete Campaign Button at bottom of tab */}
               <div className="campaign-delete-section">
@@ -1002,6 +1108,13 @@ const CampaignDetails = () => {
                           {image.title || "Untitled Person"}
                         </div>
                       </div>
+                      
+                      {/* Lock indicator for built campaigns */}
+                      {isCampaignBuilt() && (
+                        <div className="image-lock-badge">
+                          <i className="fa-solid fa-lock"></i>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
