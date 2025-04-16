@@ -1,5 +1,3 @@
-// themeSlice.ts
-
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 // Define theme mode constants
@@ -19,9 +17,20 @@ export interface ThemeState {
     themeSidebarToggle: THEME_SIDEBAR_TOGGLE
 }
 
-// Initial state
+// Get saved theme from localStorage if available
+const getSavedTheme = (): THEME_MODE => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === THEME_MODE.LIGHT || savedTheme === THEME_MODE.DARK) {
+            return savedTheme as THEME_MODE;
+        }
+    }
+    return THEME_MODE.DARK; // Default to dark theme
+};
+
+// Initial state with saved or default theme
 const initialState: ThemeState = {
-    themeType: THEME_MODE.LIGHT,
+    themeType: getSavedTheme(),
     themeSidebarToggle: THEME_SIDEBAR_TOGGLE.FALSE
 };
 
@@ -33,6 +42,11 @@ const themeSlice = createSlice({
         // Change theme action
         changeTheme(state: ThemeState, action: PayloadAction<THEME_MODE>) {
             state.themeType = action.payload;
+            
+            // Save to localStorage whenever theme changes
+            if (typeof window !== 'undefined' && window.localStorage) {
+                localStorage.setItem('theme', action.payload);
+            }
         },
         changeSidebarThemeToggle(state: ThemeState, action: PayloadAction<THEME_SIDEBAR_TOGGLE>) {
             state.themeSidebarToggle = action.payload;
