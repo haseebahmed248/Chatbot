@@ -25,7 +25,7 @@ export default (req, res, endpoint) => {
   if (endpoint === "verifyCampaign") {
     return getResponse(req, res);
   }
-  if (endpint === "updateCampaignStatus") return updateCampaignStatus(req, res);
+  if (endpoint === "updateCampaignStatus") return updateCampaignStatus(req, res);
 
   return res.status(404).json({ message: "Invalid campaign API" });
 };

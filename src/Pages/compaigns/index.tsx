@@ -8,6 +8,7 @@ import useSidebarToggle from "Common/UseSideberToggleHooks";
 import CampaignCard from "./CampaignCard";
 import CampaignModal from "./CampaignModal";
 import DeleteConfirmModal from "./DeleteConfirmModal";
+import MergeCampaignModal from "./MergeCampaignModal"; // Import the merge modal component
 
 // Redux actions
 import {
@@ -44,6 +45,7 @@ const Campaigns = () => {
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [showMergeModal, setShowMergeModal] = useState<boolean>(false); // New state for merge modal
   
   // State for notifications
   const [notification, setNotification] = useState<{
@@ -95,8 +97,11 @@ const Campaigns = () => {
     name: string;
     description: string;
     model: string;
-    selectedModels?: string[]; // Add support for multiple models
+    selectedModels?: string[];
     image: string | File | null;
+    campaignType: string;
+    is_model_campaign: boolean;
+    is_product_campaign: boolean;
   }) => {
     try {
       // Validate required fields
@@ -104,13 +109,19 @@ const Campaigns = () => {
         showNotification("Campaign name and description are required.", "error");
         return;
       }
-
+  
       // Validate model selection
       if (!campaignData.selectedModels || campaignData.selectedModels.length === 0) {
         showNotification("Please select at least one model.", "error");
         return;
       }
-
+  
+      // Validate campaign type
+      if (!campaignData.campaignType) {
+        showNotification("Please select a campaign type.", "error");
+        return;
+      }
+  
       // Convert image string to File if it's a dataURL (from CampaignModal)
       let imageFile: File | null = null;
       if (campaignData.image && typeof campaignData.image === 'string' && campaignData.image.startsWith('data:')) {
@@ -121,16 +132,20 @@ const Campaigns = () => {
       } else if (campaignData.image instanceof File) {
         imageFile = campaignData.image;
       }
-
+  
       // Dispatch the action and wait for it to complete
       await dispatch(addCampaign({
         name: campaignData.name,
         description: campaignData.description,
         modelName: campaignData.model || 'General', // For backward compatibility
         selectedModels: campaignData.selectedModels, // Add selected models
-        image: imageFile
+        image: imageFile,
+        // Add campaign type information
+        campaignType: campaignData.campaignType,
+        is_model_campaign: campaignData.is_model_campaign,
+        is_product_campaign: campaignData.is_product_campaign
       })).unwrap();
-
+  
       // Close modal and show success notification
       setShowAddModal(false);
       showNotification("Campaign added successfully!", "success");
@@ -214,6 +229,13 @@ const Campaigns = () => {
     }
   };
 
+  // Handler for merge notification success
+  const handleMergeSuccess = (message: string) => {
+    showNotification(message, "success");
+    // Refresh campaigns after merge is initiated
+    dispatch(fetchCampaigns());
+  };
+
   const openEditModal = (campaign: Campaign) => {
     dispatch(setCurrentCampaign(campaign));
     setShowEditModal(true);
@@ -239,7 +261,8 @@ const Campaigns = () => {
       selectedModels: campaign.selectedModels || [],
       image: campaign.image || campaign.image_url || '',
       createdAt: campaign.createdAt || campaign.created_at || '',
-      status: campaign.status || 'draft'
+      status: campaign.status || 'draft',
+      is_built: campaign.is_built || false
     };
   }).filter(Boolean) : []; // filter(Boolean) removes null entries
 
@@ -282,6 +305,12 @@ const Campaigns = () => {
       return 0;
     });
 
+  // Check if merge is possible (need at least 2 built and active campaigns)
+  const builtActiveCampaigns = normalizedCampaigns.filter(c => 
+    c && c.status && (c.status === 'ACTIVE' || c.status === 'active') && c.is_built
+  );
+  const canMerge = builtActiveCampaigns.length >= 2;
+
   // Early return if not authenticated
   if (!isAuthenticated) {
     return null; // Return null to prevent render while redirecting
@@ -311,13 +340,25 @@ const Campaigns = () => {
             <h1>My Campaigns</h1>
             <p>Manage and create AI-powered marketing campaigns</p>
           </div>
-          <button 
-            className="rts-btn btn-primary add-campaign-btn"
-            onClick={() => setShowAddModal(true)}
-          >
-            <i className="fa-solid fa-plus"></i>
-            New Campaign
-          </button>
+          <div className="campaign-header-buttons">
+            {/* Add new Merge Campaigns button */}
+            <button 
+              className={`rts-btn ${canMerge ? 'btn-secondary' : 'btn-disabled'} merge-campaign-btn`}
+              onClick={() => setShowMergeModal(true)}
+              disabled={!canMerge}
+              title={!canMerge ? "Need at least 2 active and built campaigns to merge" : ""}
+            >
+              <i className="fa-solid fa-object-group"></i>
+              Merge Campaigns
+            </button>
+            <button 
+              className="rts-btn btn-primary add-campaign-btn"
+              onClick={() => setShowAddModal(true)}
+            >
+              <i className="fa-solid fa-plus"></i>
+              New Campaign
+            </button>
+          </div>
         </div>
 
         <div className="campaigns-filters">
@@ -451,6 +492,16 @@ const Campaigns = () => {
           onConfirm={handleDeleteCampaign}
           isDarkMode={themeType === 'dark'}
           campaignName={currentCampaign.name || 'this campaign'}
+        />
+      )}
+
+      {/* Add the Merge Campaign Modal */}
+      {showMergeModal && (
+        <MergeCampaignModal
+          isOpen={showMergeModal}
+          onClose={() => setShowMergeModal(false)}
+          campaigns={normalizedCampaigns}
+          isDarkMode={themeType === 'dark'}
         />
       )}
     </div>

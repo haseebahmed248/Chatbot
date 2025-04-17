@@ -35,8 +35,8 @@ const CampaignDetails = () => {
   // Active tab state
   const [activeTab, setActiveTab] = useState<'product' | 'person'>('product');
 
-  // Model build state
-  const [modelState, setModelState] = useState<'disabled' | 'ready' | 'processing' | 'success'>('disabled');
+  // Model build state - Added 'pending' state
+  const [modelState, setModelState] = useState<'disabled' | 'ready' | 'processing' | 'pending' | 'success'>('disabled');
 
   // Image modal states
   const [selectedImage, setSelectedImage] = useState<CampaignImage | null>(null);
@@ -82,6 +82,51 @@ const CampaignDetails = () => {
     }
   }, [id, isAuthenticated, dispatch, navigate]);
 
+  // Helper function to determine campaign type
+  const getCampaignTypeInfo = () => {
+    // Check campaign type property first
+    if (currentCampaign?.campaignType) {
+      const type = currentCampaign.campaignType.toUpperCase();
+      if (type === 'MODEL') {
+        return { type: 'model', displayName: 'Model Campaign', icon: 'fa-user' };
+      } else if (type === 'PRODUCT') {
+        return { type: 'product', displayName: 'Product Campaign', icon: 'fa-box' };
+      } else if (type === 'MERGED') {
+        return { type: 'merged', displayName: 'Merged Campaign', icon: 'fa-object-group' };
+      }
+    }
+
+    // Fall back to boolean flags
+    if (currentCampaign?.is_model_campaign && currentCampaign?.is_product_campaign) {
+      return { type: 'merged', displayName: 'Merged Campaign', icon: 'fa-object-group' };
+    } else if (currentCampaign?.is_model_campaign) {
+      return { type: 'model', displayName: 'Model Campaign', icon: 'fa-user' };
+    } else if (currentCampaign?.is_product_campaign) {
+      return { type: 'product', displayName: 'Product Campaign', icon: 'fa-box' };
+    }
+
+    // Default case
+    return { type: 'standard', displayName: 'Standard Campaign', icon: 'fa-cube' };
+  };
+
+  // Set initial active tab based on campaign type
+  useEffect(() => {
+    if (currentCampaign) {
+      const campaignTypeInfo = getCampaignTypeInfo();
+      
+      if (campaignTypeInfo.type === 'model') {
+        // For model campaigns, show person tab by default
+        setActiveTab('person');
+        setCurrentImageType('person');
+      } else if (campaignTypeInfo.type === 'product') {
+        // For product campaigns, show product tab by default
+        setActiveTab('product');
+        setCurrentImageType('product');
+      }
+      // For standard and merged campaigns, keep the current active tab
+    }
+  }, [currentCampaign]);
+
   // Show notification function
   const showNotification = (message: string, type: 'success' | 'error') => {
     setNotification({
@@ -111,6 +156,40 @@ const CampaignDetails = () => {
   // Check if campaign is pending
   const isPendingCampaign = () => {
     return currentCampaign?.status === 'PENDING';
+  };
+
+  // Check if campaign is rejected
+  const isRejectedCampaign = () => {
+    return currentCampaign?.status === 'REJECTED';
+  };
+
+  // Get campaign status display info
+  const getCampaignStatusInfo = () => {
+    const statusMap: any = {
+      'PENDING': {
+        icon: 'fa-clock',
+        text: 'Pending Approval',
+        class: 'pending'
+      },
+      'APPROVED': {
+        icon: 'fa-check-circle',
+        text: 'Approved',
+        class: 'approved'
+      },
+      'REJECTED': {
+        icon: 'fa-times-circle',
+        text: 'Rejected',
+        class: 'rejected'
+      },
+      'ACTIVE': {
+        icon: 'fa-check-circle',
+        text: 'Active',
+        class: 'active'
+      }
+    };
+    
+    const campaignStatus = currentCampaign?.status || 'PENDING';
+    return statusMap[campaignStatus] || statusMap['PENDING'];
   };
 
   // Get model icon based on model type
@@ -269,7 +348,18 @@ const CampaignDetails = () => {
     }
     
     setIsAddImageModalOpen(true);
-    setCurrentImageType(activeTab);
+    
+    // For specialized campaign types, always set the correct image type
+    const campaignType = getCampaignTypeInfo().type;
+    if (campaignType === 'model') {
+      setCurrentImageType('person');
+    } else if (campaignType === 'product') {
+      setCurrentImageType('product');
+    } else {
+      // For standard/merged campaigns, use the active tab
+      setCurrentImageType(activeTab);
+    }
+    
     setSelectedFiles([]);
     setImageDescriptions({});
     setImageTitles({});
@@ -567,7 +657,73 @@ const CampaignDetails = () => {
     return currentCampaign?.is_built === true;
   };
 
-  // Handle building the model - UPDATED to not redirect
+  // Updated model state logic for campaign types
+  useEffect(() => {
+    if (currentCampaign?.status === 'APPROVED' && isCampaignBuilt()) {
+      // Campaign is fully approved and built
+      setModelState('success');
+    } else if (currentCampaign?.status === 'APPROVED' && !isCampaignBuilt()) {
+      // Approved but not built yet - check if it's ready based on campaign type
+      const campaignType = getCampaignTypeInfo().type;
+      
+      if (campaignType === 'model') {
+        // Model campaigns only need person images
+        if (personImages.length > 0) {
+          setModelState('ready');
+        } else {
+          setModelState('disabled');
+        }
+      } else if (campaignType === 'product') {
+        // Product campaigns only need product images
+        if (productImages.length > 0) {
+          setModelState('ready');
+        } else {
+          setModelState('disabled');
+        }
+      } else {
+        // Standard and merged campaigns need both types of images
+        if (productImages.length > 0 && personImages.length > 0) {
+          setModelState('ready');
+        } else {
+          setModelState('disabled');
+        }
+      }
+    } else if (currentCampaign?.status === 'PENDING' && isCampaignBuilt()) {
+      // Campaign is built but waiting for admin approval
+      setModelState('pending');
+    } else if (currentCampaign?.status === 'REJECTED') {
+      // Campaign is rejected
+      setModelState('disabled');
+    } else {
+      // Default case - check if we have enough images based on campaign type
+      const campaignType = getCampaignTypeInfo().type;
+      
+      if (campaignType === 'model') {
+        // Model campaigns only need person images
+        if (personImages.length > 0) {
+          setModelState('ready');
+        } else {
+          setModelState('disabled');
+        }
+      } else if (campaignType === 'product') {
+        // Product campaigns only need product images
+        if (productImages.length > 0) {
+          setModelState('ready');
+        } else {
+          setModelState('disabled');
+        }
+      } else {
+        // Standard and merged campaigns need both types of images
+        if (productImages.length > 0 && personImages.length > 0) {
+          setModelState('ready');
+        } else {
+          setModelState('disabled');
+        }
+      }
+    }
+  }, [productImages.length, personImages.length, currentCampaign]);
+
+  // Handle building the model - UPDATED to set to pending state
   const handleBuildModel = async () => {
     if (modelState !== 'ready' || !id) return;
     
@@ -576,18 +732,20 @@ const CampaignDetails = () => {
       return;
     }
     
-    // Set to processing state
+    // Set to processing state during API call
     setModelState('processing');
     
     try {
       // Call the real API to build the campaign
       await dispatch(buildCampaign(id)).unwrap();
       
-      // Set success state
-      setModelState('success');
-      showNotification("Campaign built successfully! You can now chat with your campaign.", "success");
+      // Set pending state after successful API call - waiting for admin approval
+      setModelState('pending');
+      showNotification("Campaign submitted for building. It will be available once an administrator approves it.", "success");
       
-      // No redirect - stay on the same page
+      // Refresh campaign details to show the pending status
+      dispatch(fetchCampaignDetails(id));
+      
     } catch (error: any) {
       // Set back to ready state if there was an error
       setModelState('ready');
@@ -597,33 +755,10 @@ const CampaignDetails = () => {
 
   // Handle chat with campaign
   const handleChatWithCampaign = () => {
-    if (isPendingCampaign()) {
-      setShowPendingError(true);
-      return;
-    }
-    
     if (id) {
       navigate(`/image-generator/${id}`);
     }
   };
-
-  // Check if model can be built (has both product and person images)
-  useEffect(() => {
-    if (productImages.length > 0 && personImages.length > 0) {
-      if (modelState === 'disabled') {
-        setModelState('ready');
-      }
-    } else {
-      if (modelState !== 'disabled' && modelState !== 'success') {
-        setModelState('disabled');
-      }
-    }
-    
-    // Set success state if campaign is already built
-    if (isCampaignBuilt() && modelState !== 'success') {
-      setModelState('success');
-    }
-  }, [productImages.length, personImages.length, modelState, currentCampaign]);
 
   // Current file being reviewed in the upload process
   const currentFileId = `file-${currentFileIndex}`;
@@ -691,7 +826,7 @@ const CampaignDetails = () => {
   const modelIcon = getModelIcon(modelName);
   const modelClass = getModelClass(modelName);
   const mainImage = currentCampaign.image_url || currentCampaign.image || '';
-  const campaignStatus = currentCampaign.status || 'active';
+  const statusInfo = getCampaignStatusInfo();
 
   return (
     <div className={`main-center-content-m-left ${themeSidebarToggle ? "collapsed" : ""}`}>
@@ -709,6 +844,26 @@ const CampaignDetails = () => {
             >
               <i className="fa-solid fa-times"></i>
             </button>
+          </div>
+        )}
+        
+        {/* Campaign Status Banner - NEW */}
+        {isPendingCampaign() && (
+          <div className="campaign-status-banner pending">
+            <i className="fa-solid fa-clock"></i>
+            <span>This campaign is awaiting administrator approval. You cannot modify it until it's approved.</span>
+          </div>
+        )}
+        
+        {isRejectedCampaign() && (
+          <div className="campaign-status-banner rejected">
+            <i className="fa-solid fa-times-circle"></i>
+            <span>This campaign has been rejected. Please check admin notes for details.</span>
+            {/* {currentCampaign.admin_notes && (
+              <div className="admin-notes">
+                <strong>Admin Notes:</strong> {currentCampaign.admin_notes}
+              </div>
+            )} */}
           </div>
         )}
         
@@ -741,27 +896,40 @@ const CampaignDetails = () => {
             Back to Campaigns
           </Link>
           
-          {/* Only show Build Button if not built */}
-          {!isCampaignBuilt() && (
+          {/* Status info pills */}
+          <div className={`campaign-status-pill ${statusInfo.class}`}>
+            <i className={`fa-solid ${statusInfo.icon}`}></i>
+            {statusInfo.text}
+          </div>
+          
+          {/* Build Model Button - UPDATED for campaign types */}
+          {!isCampaignBuilt() && currentCampaign.status === 'APPROVED' && (
             <button 
               className={`build-model-btn ${modelState}`}
               onClick={handleBuildModel}
-              disabled={modelState === 'disabled' || modelState === 'processing' || isPendingCampaign()}
+              disabled={modelState === 'disabled' || modelState === 'processing' || modelState === 'pending' || isPendingCampaign()}
             >
               {modelState === 'disabled' ? (
                 <>
                   <i className="fa-solid fa-ban"></i>
-                  Add Images First
+                  {getCampaignTypeInfo().type === 'model' ? 'Add Person Images First' :
+                   getCampaignTypeInfo().type === 'product' ? 'Add Product Images First' :
+                   'Add Both Image Types First'}
                 </>
               ) : modelState === 'ready' ? (
                 <>
                   <i className="fa-solid fa-cogs"></i>
-                  Build Model
+                  Build Campaign
                 </>
               ) : modelState === 'processing' ? (
                 <>
                   <i className="fa-solid fa-spinner fa-spin"></i>
                   Processing...
+                </>
+              ) : modelState === 'pending' ? (
+                <>
+                  <i className="fa-solid fa-clock"></i>
+                  Pending Admin Approval
                 </>
               ) : (
                 <>
@@ -769,23 +937,26 @@ const CampaignDetails = () => {
                   Built Successfully
                 </>
               )}
-              {isPendingCampaign() && <span className="tooltip-text">Campaign needs to be approved first</span>}
             </button>
           )}
           
-          {/* Add Built Successfully badge if built */}
-          {isCampaignBuilt() && (
-            <div className="main-image-chat-button">
-              <button
-                className="main-image-chat-button"
-                onClick={handleChatWithCampaign}
-                disabled={isPendingCampaign()}
-              >
-                <i className="fa-solid fa-comments"></i>
-                Chat with Campaign
-                {isPendingCampaign() && <span className="tooltip-text">Campaign needs to be approved first</span>}
-              </button>
+          {/* Pending Build State - NEW */}
+          {modelState === 'pending' && !isCampaignBuilt() && (
+            <div className="build-status-info pending">
+              <i className="fa-solid fa-clock"></i>
+              <span>Build requested. Waiting for admin approval.</span>
             </div>
+          )}
+          
+          {/* Chat Button - Only show if campaign is ACTIVE and built */}
+          {isCampaignBuilt() && currentCampaign.status === 'ACTIVE' && (
+            <button
+              className="main-image-chat-button"
+              onClick={handleChatWithCampaign}
+            >
+              <i className="fa-solid fa-comments"></i>
+              Chat with Campaign
+            </button>
           )}
         </div>
         
@@ -845,9 +1016,15 @@ const CampaignDetails = () => {
                 <i className="fa-regular fa-calendar"></i>
                 Created {formatDate(currentCampaign.created_at || currentCampaign.createdAt || '')}
               </div>
-              <div className={`campaign-details-status ${campaignStatus.toLowerCase()}`}>
-                {campaignStatus}
-              </div>
+              
+              {/* Display admin info if available */}
+              {/* {currentCampaign.adminInfo && (
+                <div className="campaign-details-admin">
+                  <i className="fa-solid fa-user-shield"></i>
+                  Reviewed by: {currentCampaign.adminInfo.username}
+                </div>
+              )} */}
+              
               {isCampaignBuilt() && (
                 <div className="campaign-details-built">
                   <i className="fa-solid fa-lock"></i>
@@ -855,6 +1032,14 @@ const CampaignDetails = () => {
                 </div>
               )}
             </div>
+            
+            {/* Admin notes display */}
+            {/* {currentCampaign.admin_notes && (
+              <div className="campaign-admin-notes">
+                <h4><i className="fa-solid fa-clipboard-list"></i> Admin Notes:</h4>
+                <p>{currentCampaign.admin_notes}</p>
+              </div>
+            )} */}
           </div>
 
           <div className="campaign-details-image">
@@ -863,8 +1048,16 @@ const CampaignDetails = () => {
                 <img src={mainImage} alt={currentCampaign.name} />
                 <div className="main-image-badge">Main Image</div>
                 
-                {/* Add chat button directly on the image if campaign is built */}
-                {isCampaignBuilt() && !isPendingCampaign() && (
+                {/* Add verification overlay if pending */}
+                {isPendingCampaign() && (
+                  <div className="image-verification-overlay">
+                    <i className="fa-solid fa-clock"></i>
+                    <span>Awaiting Verification</span>
+                  </div>
+                )}
+                
+                {/* Add chat button directly on the image if campaign is built and ACTIVE */}
+                {isCampaignBuilt() && currentCampaign.status === 'ACTIVE' && (
                   <button 
                     className="main-image-chat-button"
                     onClick={handleChatWithCampaign}
@@ -883,102 +1076,52 @@ const CampaignDetails = () => {
           </div>
         </div>
 
-        {/* Campaign content tabs */}
+        {/* Campaign content tabs - Conditionally shown based on campaign type */}
         <div className="campaign-details-tabs">
-          <div 
-            className={`tab ${activeTab === 'product' ? 'active' : ''}`}
-            onClick={() => setActiveTab('product')}
-          >
-            Product Images
+          {/* Always show the campaign type badge */}
+          <div className="campaign-type-indicator">
+            <i className={`fa-solid ${getCampaignTypeInfo().icon}`}></i>
+            {getCampaignTypeInfo().displayName}
           </div>
-          <div 
-            className={`tab ${activeTab === 'person' ? 'active' : ''}`}
-            onClick={() => setActiveTab('person')}
-          >
-            Person Images
-          </div>
+          
+          {/* Only show tabs if campaign is standard or merged type */}
+          {(getCampaignTypeInfo().type === 'standard' || getCampaignTypeInfo().type === 'merged') ? (
+            <>
+              <div 
+                className={`tab ${activeTab === 'product' ? 'active' : ''}`}
+                onClick={() => setActiveTab('product')}
+              >
+                Product Images
+              </div>
+              <div 
+                className={`tab ${activeTab === 'person' ? 'active' : ''}`}
+                onClick={() => setActiveTab('person')}
+              >
+                Person Images
+              </div>
+            </>
+          ) : getCampaignTypeInfo().type === 'model' ? (
+            // For model campaigns, only show person tab
+            <div className="tab active">Person Images</div>
+          ) : (
+            // For product campaigns, only show product tab
+            <div className="tab active">Product Images</div>
+          )}
         </div>
 
-        {/* Tab Content */}
+        {/* Tab Content - Conditionally shown based on campaign type */}
         <div className="campaign-details-content">
-          {/* Product Images Tab */}
-          {activeTab === 'product' && (
-            <div className="campaign-images-section">
-              <div className="section-header">
-                <h2>Product Images</h2>
-                <button 
-                  className="add-image-btn"
-                  onClick={openAddImageModal}
-                  disabled={isCampaignBuilt() || isPendingCampaign()}
-                >
-                  <i className="fa-solid fa-plus"></i>
-                  Add Product Images
-                  {isCampaignBuilt() && <span className="locked-tooltip">Campaign is built</span>}
-                  {isPendingCampaign() && <span className="locked-tooltip">Campaign needs to be approved first</span>}
-                </button>
-              </div>
-
-              {productImages.length > 0 ? (
-                <div className="campaign-images-gallery">
-                  {productImages.map((image) => (
-                    <div 
-                      key={image.id} 
-                      className="gallery-item" 
-                      onClick={() => openImageModal(image)}
-                    >
-                      <img src={image.url} alt={image.title || "Product image"} />
-                      <div className="image-overlay">
-                        <div className="image-title">
-                          {image.title || "Untitled Product"}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="no-images">
-                  <div className="no-images-icon">
-                    <i className="fa-regular fa-images"></i>
-                  </div>
-                  <h3>No Product Images</h3>
-                  <p>Add product images to showcase in your campaign.</p>
-                  <button 
-                    className="add-image-btn" 
-                    onClick={openAddImageModal}
-                    disabled={isCampaignBuilt() || isPendingCampaign()}
-                  >
-                    <i className="fa-solid fa-plus"></i>
-                    Add Product Images
-                    {isCampaignBuilt() && <span className="locked-tooltip">Campaign is built</span>}
-                    {isPendingCampaign() && <span className="locked-tooltip">Campaign needs to be approved first</span>}
-                  </button>
-                </div>
-              )}
-              
-              {/* Delete Campaign Button at bottom of tab */}
-              <div className="campaign-delete-section">
-                <button 
-                  className="btn-danger" 
-                  onClick={handleDeleteCampaign}
-                  disabled={isCampaignBuilt() || isPendingCampaign()}
-                >
-                  <i className="fa-solid fa-trash"></i>
-                  Delete Campaign
-                  {isCampaignBuilt() && <span className="tooltip-text">Built campaigns cannot be deleted</span>}
-                  {isPendingCampaign() && <span className="tooltip-text">Pending campaigns cannot be deleted</span>}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Person Images Tab */}
-          {activeTab === 'person' && (
+          {/* For model campaigns, only show person tab content */}
+          {getCampaignTypeInfo().type === 'model' ? (
             <div className="campaign-images-section">
               <div className="section-header">
                 <h2>Person Images</h2>
                 <button 
                   className="add-image-btn"
-                  onClick={openAddImageModal}
+                  onClick={() => {
+                    setCurrentImageType('person');
+                    openAddImageModal();
+                  }}
                   disabled={isCampaignBuilt() || isPendingCampaign()}
                 >
                   <i className="fa-solid fa-plus"></i>
@@ -1002,6 +1145,13 @@ const CampaignDetails = () => {
                           {image.title || "Untitled Person"}
                         </div>
                       </div>
+                      
+                      {/* Lock indicator for built campaigns */}
+                      {isCampaignBuilt() && (
+                        <div className="image-lock-badge">
+                          <i className="fa-solid fa-lock"></i>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -1011,10 +1161,13 @@ const CampaignDetails = () => {
                     <i className="fa-regular fa-user"></i>
                   </div>
                   <h3>No Person Images</h3>
-                  <p>Add person images for your campaign.</p>
+                  <p>Add person images for your model campaign.</p>
                   <button 
                     className="add-image-btn" 
-                    onClick={openAddImageModal}
+                    onClick={() => {
+                      setCurrentImageType('person');
+                      openAddImageModal();
+                    }}
                     disabled={isCampaignBuilt() || isPendingCampaign()}
                   >
                     <i className="fa-solid fa-plus"></i>
@@ -1039,6 +1192,260 @@ const CampaignDetails = () => {
                 </button>
               </div>
             </div>
+          ) : 
+          
+          /* For product campaigns, only show product tab content */
+          getCampaignTypeInfo().type === 'product' ? (
+            <div className="campaign-images-section">
+              <div className="section-header">
+                <h2>Product Images</h2>
+                <button 
+                  className="add-image-btn"
+                  onClick={() => {
+                    setCurrentImageType('product');
+                    openAddImageModal();
+                  }}
+                  disabled={isCampaignBuilt() || isPendingCampaign()}
+                >
+                  <i className="fa-solid fa-plus"></i>
+                  Add Product Images
+                  {isCampaignBuilt() && <span className="locked-tooltip">Campaign is built</span>}
+                  {isPendingCampaign() && <span className="locked-tooltip">Campaign needs to be approved first</span>}
+                </button>
+              </div>
+
+              {productImages.length > 0 ? (
+                <div className="campaign-images-gallery">
+                  {productImages.map((image) => (
+                    <div 
+                      key={image.id} 
+                      className="gallery-item" 
+                      onClick={() => openImageModal(image)}
+                    >
+                      <img src={image.url} alt={image.title || "Product image"} />
+                      <div className="image-overlay">
+                        <div className="image-title">
+                          {image.title || "Untitled Product"}
+                        </div>
+                      </div>
+                      
+                      {/* Lock indicator for built campaigns */}
+                      {isCampaignBuilt() && (
+                        <div className="image-lock-badge">
+                          <i className="fa-solid fa-lock"></i>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="no-images">
+                  <div className="no-images-icon">
+                    <i className="fa-regular fa-images"></i>
+                  </div>
+                  <h3>No Product Images</h3>
+                  <p>Add product images to showcase in your campaign.</p>
+                  <button 
+                    className="add-image-btn" 
+                    onClick={() => {
+                      setCurrentImageType('product');
+                      openAddImageModal();
+                    }}
+                    disabled={isCampaignBuilt() || isPendingCampaign()}
+                  >
+                    <i className="fa-solid fa-plus"></i>
+                    Add Product Images
+                    {isCampaignBuilt() && <span className="locked-tooltip">Campaign is built</span>}
+                    {isPendingCampaign() && <span className="locked-tooltip">Campaign needs to be approved first</span>}
+                  </button>
+                </div>
+              )}
+              
+              {/* Delete Campaign Button at bottom of tab */}
+              <div className="campaign-delete-section">
+                <button 
+                  className="btn-danger" 
+                  onClick={handleDeleteCampaign}
+                  disabled={isCampaignBuilt() || isPendingCampaign()}
+                >
+                  <i className="fa-solid fa-trash"></i>
+                  Delete Campaign
+                  {isCampaignBuilt() && <span className="tooltip-text">Built campaigns cannot be deleted</span>}
+                  {isPendingCampaign() && <span className="tooltip-text">Pending campaigns cannot be deleted</span>}
+                </button>
+              </div>
+            </div>
+          ) :
+          
+          /* For standard or merged campaigns, show content based on active tab */
+          (
+            <>
+              {/* Product Images Tab */}
+              {activeTab === 'product' && (
+                <div className="campaign-images-section">
+                  <div className="section-header">
+                    <h2>Product Images</h2>
+                    <button 
+                      className="add-image-btn"
+                      onClick={() => {
+                        setCurrentImageType('product');
+                        openAddImageModal();
+                      }}
+                      disabled={isCampaignBuilt() || isPendingCampaign()}
+                    >
+                      <i className="fa-solid fa-plus"></i>
+                      Add Product Images
+                      {isCampaignBuilt() && <span className="locked-tooltip">Campaign is built</span>}
+                      {isPendingCampaign() && <span className="locked-tooltip">Campaign needs to be approved first</span>}
+                    </button>
+                  </div>
+
+                  {productImages.length > 0 ? (
+                    <div className="campaign-images-gallery">
+                      {productImages.map((image) => (
+                        <div 
+                          key={image.id} 
+                          className="gallery-item" 
+                          onClick={() => openImageModal(image)}
+                        >
+                          <img src={image.url} alt={image.title || "Product image"} />
+                          <div className="image-overlay">
+                            <div className="image-title">
+                              {image.title || "Untitled Product"}
+                            </div>
+                          </div>
+                          
+                          {/* Lock indicator for built campaigns */}
+                          {isCampaignBuilt() && (
+                            <div className="image-lock-badge">
+                              <i className="fa-solid fa-lock"></i>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="no-images">
+                      <div className="no-images-icon">
+                        <i className="fa-regular fa-images"></i>
+                      </div>
+                      <h3>No Product Images</h3>
+                      <p>Add product images to showcase in your campaign.</p>
+                      <button 
+                        className="add-image-btn" 
+                        onClick={() => {
+                          setCurrentImageType('product');
+                          openAddImageModal();
+                        }}
+                        disabled={isCampaignBuilt() || isPendingCampaign()}
+                      >
+                        <i className="fa-solid fa-plus"></i>
+                        Add Product Images
+                        {isCampaignBuilt() && <span className="locked-tooltip">Campaign is built</span>}
+                        {isPendingCampaign() && <span className="locked-tooltip">Campaign needs to be approved first</span>}
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Delete Campaign Button at bottom of tab */}
+                  <div className="campaign-delete-section">
+                    <button 
+                      className="btn-danger" 
+                      onClick={handleDeleteCampaign}
+                      disabled={isCampaignBuilt() || isPendingCampaign()}
+                    >
+                      <i className="fa-solid fa-trash"></i>
+                      Delete Campaign
+                      {isCampaignBuilt() && <span className="tooltip-text">Built campaigns cannot be deleted</span>}
+                      {isPendingCampaign() && <span className="tooltip-text">Pending campaigns cannot be deleted</span>}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Person Images Tab */}
+              {activeTab === 'person' && (
+                <div className="campaign-images-section">
+                  <div className="section-header">
+                    <h2>Person Images</h2>
+                    <button 
+                      className="add-image-btn"
+                      onClick={() => {
+                        setCurrentImageType('person');
+                        openAddImageModal();
+                      }}
+                      disabled={isCampaignBuilt() || isPendingCampaign()}
+                    >
+                      <i className="fa-solid fa-plus"></i>
+                      Add Person Images
+                      {isCampaignBuilt() && <span className="locked-tooltip">Campaign is built</span>}
+                      {isPendingCampaign() && <span className="locked-tooltip">Campaign needs to be approved first</span>}
+                    </button>
+                  </div>
+
+                  {personImages.length > 0 ? (
+                    <div className="campaign-images-gallery">
+                      {personImages.map((image) => (
+                        <div 
+                          key={image.id} 
+                          className="gallery-item" 
+                          onClick={() => openImageModal(image)}
+                        >
+                          <img src={image.url} alt={image.title || "Person image"} />
+                          <div className="image-overlay">
+                            <div className="image-title">
+                              {image.title || "Untitled Person"}
+                            </div>
+                          </div>
+                          
+                          {/* Lock indicator for built campaigns */}
+                          {isCampaignBuilt() && (
+                            <div className="image-lock-badge">
+                              <i className="fa-solid fa-lock"></i>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="no-images">
+                      <div className="no-images-icon">
+                        <i className="fa-regular fa-user"></i>
+                      </div>
+                      <h3>No Person Images</h3>
+                      <p>Add person images for your campaign.</p>
+                      <button 
+                        className="add-image-btn" 
+                        onClick={() => {
+                          setCurrentImageType('person');
+                          openAddImageModal();
+                        }}
+                        disabled={isCampaignBuilt() || isPendingCampaign()}
+                      >
+                        <i className="fa-solid fa-plus"></i>
+                        Add Person Images
+                        {isCampaignBuilt() && <span className="locked-tooltip">Campaign is built</span>}
+                        {isPendingCampaign() && <span className="locked-tooltip">Campaign needs to be approved first</span>}
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Delete Campaign Button at bottom of tab */}
+                  <div className="campaign-delete-section">
+                    <button 
+                      className="btn-danger" 
+                      onClick={handleDeleteCampaign}
+                      disabled={isCampaignBuilt() || isPendingCampaign()}
+                    >
+                      <i className="fa-solid fa-trash"></i>
+                      Delete Campaign
+                      {isCampaignBuilt() && <span className="tooltip-text">Built campaigns cannot be deleted</span>}
+                      {isPendingCampaign() && <span className="tooltip-text">Pending campaigns cannot be deleted</span>}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 

@@ -50,7 +50,7 @@ class PythonApiMiddleware {
    * @param {Array<string>} [imageTitles] - Optional array of image titles
    * @returns {Promise<object>} - The response from the Python backend or error info
    */
-  async sendImagesToBackend(campaignId, campaignName, imagePaths, imageTypes = [], imageDescriptions = [], imageTitles = []) {
+  async sendImagesToBackend(campaignId, campaignName, imagePaths, imageTypes = [], imageDescriptions = [], imageTitles = [], ownerUsername = '', ownerEmail = '') {
     try {
       // Optional quick check if backend is available before attempting long operation
       console.log('Data ', campaignId, campaignName, imagePaths);
@@ -61,14 +61,16 @@ class PythonApiMiddleware {
           isMocked: true
         };
       }
-
+  
       // Create JSON payload instead of FormData
       const payload = {
         campaignid: campaignId,
         campaign_name: campaignName,
+        username: ownerUsername,
+        email: ownerEmail,
         files: []
       };
-
+  
       // Read each image file and convert to base64
       for (let i = 0; i < imagePaths.length; i++) {
         const imagePath = imagePaths[i];
@@ -93,9 +95,18 @@ class PythonApiMiddleware {
           prompt: imageDescriptions && imageDescriptions[i] ? imageDescriptions[i] : ''
         };
         
+        // Add model_id or product_id based on image type
+        if (imageTypes && imageTypes[i]) {
+          if (imageTypes[i] === 'person') {
+            fileInfo.model_id = "True";
+          } else if (imageTypes[i] === 'product') {
+            fileInfo.product_id = "True";
+          }
+        }
+        
         payload.files.push(fileInfo);
       }
-
+  
       console.log('JSON payload created with', payload.files.length, 'files');
       console.log('payload', payload);
       // Send the request to the Python backend
@@ -111,7 +122,7 @@ class PythonApiMiddleware {
           timeout: this.timeout
         }
       );
-
+  
       return response.data;
     } catch (error) {
       // Log the error but don't crash
@@ -120,7 +131,7 @@ class PythonApiMiddleware {
       // Update backend availability status
       this.isBackendAvailable = false;
       this.lastCheckTime = Date.now();
-
+  
       // Return a graceful failure response
       return {
         success: false,

@@ -121,7 +121,7 @@ export const getCampaignDetails = async (req, res) => {
 };
 
 export const addCampaign = async (req, res) => {
-  const { name, description, modelName, selectedModels, userId } = req.body;
+  const { name, description, modelName, selectedModels, userId, campaignType, is_model_campaign, is_product_campaign } = req.body;
   const image = req.file;
 
   if (!name || !description || !userId || !image) {
@@ -150,7 +150,16 @@ export const addCampaign = async (req, res) => {
       return res.status(403).json({ data: encryptedResponse });
     }
     
-    const imageUrl = `${process.env.BACKEND_URL}/data/Pictures/${image.filename}`;
+    // Important: Use the fileUrl from handleFileUpload instead of constructing the URL manually
+    if (!req.fileUrl) {
+      console.error("Missing fileUrl after image upload", { image });
+      const encryptedResponse = encryptData({ message: "Error processing uploaded image." });
+      return res.status(500).json({ data: encryptedResponse });
+    }
+    
+    // Use req.fileUrl which is set by handleFileUpload in your server.js
+    const imageUrl = req.fileUrl;
+    console.log(`Adding campaign with image URL: ${imageUrl}`);
     
     // Format selected models as JSON string
     const formattedSelectedModels = formatSelectedModels(selectedModels);
@@ -162,7 +171,21 @@ export const addCampaign = async (req, res) => {
       primaryModel = parsedModels[0] || 'General';
     }
     
-    // Updated to set status to PENDING
+    // Determine campaign type
+    let campaign_type = 'STANDARD';
+    if (campaignType) {
+      if (campaignType.toUpperCase() === 'MODEL') {
+        campaign_type = 'MODEL';
+      } else if (campaignType.toUpperCase() === 'PRODUCT') {
+        campaign_type = 'PRODUCT';
+      }
+    }
+    
+    // Set model/product flags based on campaignType or explicit flags
+    const isModelCampaign = is_model_campaign === true || campaign_type === 'MODEL';
+    const isProductCampaign = is_product_campaign === true || campaign_type === 'PRODUCT';
+    
+    // Updated to set status to PENDING and include campaign type information
     const campaign = await prisma.campaigns.create({
       data: {
         name,
@@ -172,7 +195,10 @@ export const addCampaign = async (req, res) => {
         user_id: parseInt(userId),
         image_url: imageUrl,
         status: 'PENDING',
-        is_built: false
+        is_built: false,
+        campaign_type,
+        is_model_campaign: isModelCampaign,
+        is_product_campaign: isProductCampaign
       }
     });
     
@@ -222,7 +248,16 @@ export const addCampaignImage = async (req, res) => {
       return res.status(400).json({ data: encryptedResponse });
     }
     
-    const imageUrl = `${process.env.BACKEND_URL}/data/Pictures/${image.filename}`;
+    // Important: Use the fileUrl from handleFileUpload instead of constructing the URL manually
+    if (!req.fileUrl) {
+      console.error("Missing fileUrl after image upload", { image });
+      const encryptedResponse = encryptData({ message: "Error processing uploaded image." });
+      return res.status(500).json({ data: encryptedResponse });
+    }
+    
+    // Use req.fileUrl which is set by handleFileUpload in your server.js
+    const imageUrl = req.fileUrl;
+    console.log(`Adding campaign image with URL: ${imageUrl}`);
     
     const newImage = await prisma.campaign_images.create({
       data: {
@@ -486,8 +521,16 @@ export const updateCampaign = async (req, res) => {
 
     // If a new image is uploaded, update the image and delete the old one
     if (newImage) {
+      // Important: Use the fileUrl from handleFileUpload instead of constructing the URL manually
+      if (!req.fileUrl) {
+        console.error("Missing fileUrl after new image upload", { newImage });
+        const encryptedResponse = encryptData({ message: "Error processing uploaded image." });
+        return res.status(500).json({ data: encryptedResponse });
+      }
+      
       deleteImage(imageUrl); // Delete the old image
-      imageUrl = `${process.env.BACKEND_URL}/data/Pictures/${newImage.filename}`;
+      imageUrl = req.fileUrl; // Use the fileUrl set by handleFileUpload
+      console.log(`Updating campaign with new image URL: ${imageUrl}`);
     }
 
     // Ensure we have at least one model selected
@@ -544,7 +587,6 @@ export const updateCampaign = async (req, res) => {
   }
 };
 
-
 export const buildCampaign = async (req, res) => {
   const { campaignId, userId } = req.body;
 
@@ -591,7 +633,21 @@ export const buildCampaign = async (req, res) => {
     });
     console.log('Campaign images:', images);
     
-    // Check if campaign has both product and person images
+    // Adjust image validation based on campaign type
+    let productImagesRequired = true;
+    let personImagesRequired = true;
+    
+    // For model campaigns, we only need person images
+    if (campaign.is_model_campaign && campaign.campaign_type === 'MODEL') {
+      productImagesRequired = false;
+    }
+    
+    // For product campaigns, we only need product images
+    if (campaign.is_product_campaign && campaign.campaign_type === 'PRODUCT') {
+      personImagesRequired = false;
+    }
+
+    // Check if campaign has the required image types
     const productImages = images.filter(img => 
       img.title.toLowerCase().includes('product')
     );
@@ -602,16 +658,27 @@ export const buildCampaign = async (req, res) => {
     );
     console.log('Person Images: ', personImages);
     
-    if (productImages.length === 0 || personImages.length === 0) {
+    // Validate image requirements based on campaign type
+    if (productImagesRequired && productImages.length === 0) {
       const encryptedResponse = encryptData({ 
-        message: "Campaign must have at least one product image and one person image to be built." 
+        message: "Campaign must have at least one product image to be built." 
+      });
+      return res.status(400).json({ data: encryptedResponse });
+    }
+    
+    if (personImagesRequired && personImages.length === 0) {
+      const encryptedResponse = encryptData({ 
+        message: "Campaign must have at least one person image to be built." 
       });
       return res.status(400).json({ data: encryptedResponse });
     }
 
     // Extract file paths from image URLs
     const imagePaths = images.map(img => {
-      const filename = path.basename(img.url);
+      // Get filename from URL
+      const urlObj = new URL(img.url);
+      const pathname = urlObj.pathname;
+      const filename = path.basename(pathname);
       return `${process.env.IMAGE_STORAGE_PATH || './data/Pictures'}/${filename}`;
     });
 
@@ -629,7 +696,10 @@ export const buildCampaign = async (req, res) => {
     try {
       // Create an array with all image paths, types, and descriptions
       const allImagesWithMetadata = images.map(img => {
-        const filename = path.basename(img.url);
+        // Get filename from URL
+        const urlObj = new URL(img.url);
+        const pathname = urlObj.pathname;
+        const filename = path.basename(pathname);
         const filePath = `${process.env.IMAGE_STORAGE_PATH || './data/Pictures'}/${filename}`;
         const type = img.title.toLowerCase().includes('product') ? 'product' : 'person';
         
@@ -644,7 +714,34 @@ export const buildCampaign = async (req, res) => {
       // Get all image paths in a flat array
       const allImagePaths = allImagesWithMetadata.map(img => img.path);
       
-      // Make a single call with all images
+      // Get campaign owner email and username
+      const campaignOwner = await prisma.users.findUnique({
+        where: {
+          id: parseInt(userId)
+        },
+        select: {
+          username: true,
+          email: true
+        }
+      });
+      
+      const ownerUsername = campaignOwner?.username || '';
+      const ownerEmail = campaignOwner?.email || '';
+      
+      // Add campaign type information to metadata for the Python backend
+      // (without changing the actual payload structure)
+      const campaignMetadata = {
+        campaign_id: campaignId.toString(),
+        campaign_name: campaign.name,
+        campaign_type: campaign.campaign_type || 'STANDARD',
+        is_model_campaign: campaign.is_model_campaign || false,
+        is_product_campaign: campaign.is_product_campaign || false
+      };
+      
+      console.log('Sending campaign to Python backend with metadata:', campaignMetadata);
+      
+      // Make a single call with all images - keeping the same payload structure
+      // but passing the campaign type information for context
       await pythonApiMiddleware.sendImagesToBackend(
         campaignId.toString(),
         campaign.name,
@@ -654,11 +751,11 @@ export const buildCampaign = async (req, res) => {
         // Pass the descriptions
         allImagesWithMetadata.map(img => img.description),
         // Pass the titles
-        allImagesWithMetadata.map(img => img.title)
+        allImagesWithMetadata.map(img => img.title),
+        // Pass the owner username and email
+        ownerUsername,
+        ownerEmail
       );
-      
-      // Notify Python to build the campaign with all images
-      await pythonApiMiddleware.notifyBuildCampaign(campaignId.toString());
       
     } catch (pythonError) {
       console.error("Error communicating with Python backend:", pythonError);
@@ -667,22 +764,9 @@ export const buildCampaign = async (req, res) => {
       });
       return res.status(500).json({ data: encryptedResponse });
     }
-    
-    // Update campaign to mark as built and set status to ACTIVE
-    // const updatedCampaign = await prisma.campaigns.update({
-    //   where: {
-    //     id: parseInt(campaignId)
-    //   },
-    //   data: {
-    //     is_built: true,
-    //     build_date: new Date(),
-    //     status: 'ACTIVE'
-    //   }
-    // });
 
     const encryptedResponse = encryptData({
-      // ...updatedCampaign,
-      message: "Campaign built successfully!"
+      message: "Campaign build process initiated successfully!"
     });
     res.status(200).json({ data: encryptedResponse });
 
@@ -729,8 +813,6 @@ export const getResponse = async (req, res) => {
   }
 }
 
-
-
 export const updateCampaignStatus = async (req, res) => {
   try {
     // Extract data from request body
@@ -738,7 +820,9 @@ export const updateCampaignStatus = async (req, res) => {
       campain_id, 
       campain_name, 
       model_name,
-      status
+      status,
+      model_id,
+      product_id
     } = req.body;
 
     // Validate required fields
@@ -751,6 +835,19 @@ export const updateCampaignStatus = async (req, res) => {
       return res.status(400).json({ message: "Invalid status. Status must be 'ready' to mark campaign as built" });
     }
 
+    // Determine campaign type
+    let campaignType;
+    if (model_id === true && product_id !== true) {
+      campaignType = 'MODEL';
+    } else if (product_id === true && model_id !== true) {
+      campaignType = 'PRODUCT';
+    } else if (model_id === true && product_id === true) {
+      campaignType = 'MERGED';
+    } else {
+      // Default case if neither is specified
+      campaignType = 'STANDARD';
+    }
+
     // Update campaign in database
     const updatedCampaign = await prisma.campaigns.update({
       where: {
@@ -761,7 +858,10 @@ export const updateCampaignStatus = async (req, res) => {
         model_name: model_name, // Update model_name if provided
         status: 'ACTIVE', // Set status to ACTIVE based on CampaignStatus enum
         is_built: true, // Mark as built
-        build_date: new Date() // Set build date to current timestamp
+        build_date: new Date(), // Set build date to current timestamp
+        campaign_type: campaignType, // Set the campaign type
+        is_model_campaign: model_id === true, // Boolean flag for model campaign
+        is_product_campaign: product_id === true // Boolean flag for product campaign
       }
     });
 
@@ -773,6 +873,99 @@ export const updateCampaignStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating campaign status:", error);
-    return res.status(500).json({ message: error.message || "An error occurred while updating campaign status" });
+    
+    // Handle specific database errors
+    if (error.code === 'P2025') {
+      return res.status(404).json({ message: "Campaign not found" });
+    }
+    
+    // Handle validation errors from prisma
+    if (error.code === 'P2002') {
+      return res.status(400).json({ message: "A campaign with this information already exists" });
+    }
+    
+    return res.status(500).json({ 
+      message: error.message || "An error occurred while updating campaign status",
+      error_code: error.code || null
+    });
+  }
+};
+
+
+export const updateMergeCompletion = async (req, res) => {
+  try {
+    // Extract data from request body
+    const { 
+      model_campaign_id,   
+      product_campaign_id, 
+      status               
+    } = req.body;
+
+    // Validate required fields
+    if (!model_campaign_id || !product_campaign_id || !status) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Both model campaign ID and product campaign ID, and status are required" 
+      });
+    }
+
+    // Validate status value
+    if (status !== 'success' && status !== 'failed') {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Status must be either 'success' or 'failed'" 
+      });
+    }
+
+    // Convert campaign IDs to integers
+    const modelId = parseInt(model_campaign_id);
+    const productId = parseInt(product_campaign_id);
+
+    // Update both campaigns with the merge status
+    const updatedCampaigns = await prisma.$transaction([
+      prisma.campaigns.update({
+        where: { id: modelId },
+        data: {
+          merge_status: status === 'success' ? 'completed' : 'failed',
+          merge_date: new Date()
+        }
+      }),
+      prisma.campaigns.update({
+        where: { id: productId },
+        data: {
+          merge_status: status === 'success' ? 'completed' : 'failed',
+          merge_date: new Date()
+        }
+      })
+    ]);
+
+    // Return success response
+    return res.status(200).json({
+      success: true,
+      message: status === 'success' ? 
+        "Campaign merge completed successfully" : 
+        "Campaign merge failed",
+      data: {
+        model_campaign: updatedCampaigns[0],
+        product_campaign: updatedCampaigns[1]
+      }
+    });
+
+  } catch (error) {
+    console.error("Error updating merge status:", error);
+    
+    // Handle specific database errors
+    if (error.code === 'P2025') {
+      return res.status(404).json({ 
+        success: false, 
+        message: "One or both campaigns not found" 
+      });
+    }
+    
+    return res.status(500).json({
+      success: false,
+      message: error.message || "An error occurred while updating merge status",
+      error_code: error.code || null
+    });
   }
 };

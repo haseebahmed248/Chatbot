@@ -15,6 +15,9 @@ interface CampaignModalProps {
     image: string | File;
     createdAt: string;
     status: string;
+    campaignType?: string;
+    is_model_campaign?: boolean;
+    is_product_campaign?: boolean;
   };
 }
 
@@ -31,11 +34,17 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
   const [description, setDescription] = useState<string>(campaign?.description || '');
   const [selectedModels, setSelectedModels] = useState<string[]>(campaign?.selectedModels || []);
   const [mainImage, setMainImage] = useState<string | File | null>(campaign?.image || null);
+  const [campaignType, setCampaignType] = useState<string>(
+    campaign?.campaignType || 
+    (campaign?.is_model_campaign ? 'model' : 
+     campaign?.is_product_campaign ? 'product' : 'standard')
+  );
   
   // Errors state
   const [nameError, setNameError] = useState<string>('');
   const [descriptionError, setDescriptionError] = useState<string>('');
   const [modelError, setModelError] = useState<string>('');
+  const [typeError, setTypeError] = useState<string>('');
   
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,6 +54,13 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
     { id: "image-generation", name: "Image Generation", price: 0.10 },
     { id: "text-generation", name: "Text Generation", price: 0.05 },
     { id: "multi-modal", name: "Multi-modal", price: 0.15 }
+  ];
+  
+  // Campaign type options
+  const campaignTypeOptions = [
+    { id: "standard", name: "Standard Campaign" },
+    { id: "model", name: "Model Campaign" },
+    { id: "product", name: "Product Campaign" }
   ];
   
   // Initialize form when editing existing campaign
@@ -64,6 +80,17 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
       }
       
       setMainImage(campaign.image || null);
+      
+      // Set campaign type based on existing campaign data
+      if (campaign.campaignType) {
+        setCampaignType(campaign.campaignType.toLowerCase());
+      } else if (campaign.is_model_campaign) {
+        setCampaignType('model');
+      } else if (campaign.is_product_campaign) {
+        setCampaignType('product');
+      } else {
+        setCampaignType('standard');
+      }
     }
   }, [campaign]);
 
@@ -109,6 +136,13 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
       setModelError('');
     }
     
+    if (!campaignType) {
+      setTypeError('Please select a campaign type');
+      isValid = false;
+    } else {
+      setTypeError('');
+    }
+    
     return isValid;
   };
 
@@ -127,7 +161,11 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
       description,
       model: primaryModel, // For backward compatibility
       selectedModels,
-      image: mainImage
+      image: mainImage,
+      // Add campaign type related flags
+      campaignType: campaignType,
+      is_model_campaign: campaignType === 'model',
+      is_product_campaign: campaignType === 'product'
     };
     
     onSave(campaignData);
@@ -171,6 +209,33 @@ const CampaignModal: React.FC<CampaignModalProps> = ({
               className={descriptionError ? 'error' : ''}
             />
             {descriptionError && <span className="error-message">{descriptionError}</span>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="campaign-type">Campaign Type</label>
+            <select
+              id="campaign-type"
+              value={campaignType}
+              onChange={(e) => setCampaignType(e.target.value)}
+              className={typeError ? 'error' : ''}
+            >
+              <option value="">-- Select Campaign Type --</option>
+              {campaignTypeOptions.map(option => (
+                <option key={option.id} value={option.id}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
+            {typeError && <span className="error-message">{typeError}</span>}
+            
+            <div className="helper-text" style={{ marginTop: '8px', fontSize: '13px', color: '#90A0B0' }}>
+              {campaignType === 'model' && 
+                'Model campaigns contain images of models/people for your AI to use.'}
+              {campaignType === 'product' && 
+                'Product campaigns contain images of products for your AI to use.'}
+              {campaignType === 'standard' && 
+                'Standard campaigns are general purpose and not specifically for models or products.'}
+            </div>
           </div>
           
           <div className="form-group">

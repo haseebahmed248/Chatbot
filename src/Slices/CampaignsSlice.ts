@@ -21,6 +21,9 @@ export interface Campaign {
   userId?: number | string;
   is_built?: boolean;
   build_date?: string;
+  is_model_campaign?: boolean;
+  is_product_campaign?: boolean;
+  campaignType?: string;
 }
 
 export interface CampaignImage {
@@ -39,6 +42,9 @@ export interface AddCampaignRequest {
   modelName: string; // Keep for backward compatibility
   selectedModels?: string[]; // For multiple model selection
   image: File | null;
+  campaignType?: string;
+  is_model_campaign?: boolean;
+  is_product_campaign?: boolean;
 }
 
 export interface UpdateCampaignRequest {
@@ -98,7 +104,7 @@ const parseSelectedModels = (json: string | null | undefined): string[] => {
 
 // Async thunks for API calls
 export const fetchCampaigns = createAsyncThunk(
-  'campaigns/fetchCampaigns',
+  `${process.env.REACT_APP_API_URL}campaigns/fetchCampaigns`,
   async (_, { rejectWithValue }) => {
     try {
       const userId = localStorage.getItem("userId");

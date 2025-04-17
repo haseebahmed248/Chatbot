@@ -54,6 +54,29 @@ const store = configureStore({
     }).concat(authMiddleware), // Add the authMiddleware here
 });
 
+// IMPORTANT: Apply theme immediately after store creation
+// This ensures the theme is applied before any components render
+const applyInitialTheme = () => {
+  try {
+    // Get current theme from store
+    const currentState = store.getState();
+    const currentTheme = currentState.theme.themeType;
+    
+    // Apply theme to document
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      
+      // Also save to localStorage for persistence
+      localStorage.setItem('theme', currentTheme);
+    }
+  } catch (error) {
+    console.error('Error applying initial theme:', error);
+  }
+};
+
+// Run immediately
+applyInitialTheme();
+
 // Set up auto-checking of auth status every minute
 setInterval(() => {
   store.dispatch({ type: 'auth/checkAuthStatus' });

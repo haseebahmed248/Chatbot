@@ -82,12 +82,14 @@ const TopBar = () => {
     
     const toggleModeTheme = () => {
         const newTheme = themeType === THEME_MODE.LIGHT ? THEME_MODE.DARK : THEME_MODE.LIGHT;
-        document.documentElement.setAttribute("data-theme", newTheme);
         dispatch(changeTheme(newTheme));
     };
 
     useEffect(() => {
-        document.documentElement.setAttribute("data-theme", themeType);
+        // Apply theme whenever themeType changes
+        if (typeof document !== 'undefined') {
+            document.documentElement.setAttribute("data-theme", themeType);
+        }
     }, [themeType]);
 
     //Toggle sidebar
