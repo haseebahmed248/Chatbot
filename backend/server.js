@@ -25,19 +25,25 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 const whitelist = new Set([
   'http://localhost:3000',
+  'http://127.0.0.1:3000',
   'http://localhost:8000',
   'http://localhost:8001',
   'http://localhost:8080',
-  'http://127.0.0.1:3000',
   'https://ad-genie.vercel.app',
+  'https://colab.research.google.com',
+  'https://*.googleusercontent.com', // This covers various Colab subdomains
   process.env.FRONTEND_URL
 ]);
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || whitelist.has(origin)) {
+    // For Google Colab and similar dynamic sources, we may need a more flexible check
+    if (!origin || whitelist.has(origin) || 
+        origin?.endsWith('googleusercontent.com') || 
+        origin?.includes('colab.research.google.com')) {
       callback(null, true);
     } else {
+      console.log(`CORS blocked request from: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },

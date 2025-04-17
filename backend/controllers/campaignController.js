@@ -160,6 +160,16 @@ export const addCampaign = async (req, res) => {
     // Use req.fileUrl which is set by handleFileUpload in your server.js
     const imageUrl = req.fileUrl;
     console.log(`Adding campaign with image URL: ${imageUrl}`);
+    // Important: Use the fileUrl from handleFileUpload instead of constructing the URL manually
+    if (!req.fileUrl) {
+      console.error("Missing fileUrl after image upload", { image });
+      const encryptedResponse = encryptData({ message: "Error processing uploaded image." });
+      return res.status(500).json({ data: encryptedResponse });
+    }
+    
+    // Use req.fileUrl which is set by handleFileUpload in your server.js
+    const imageUrl = req.fileUrl;
+    console.log(`Adding campaign with image URL: ${imageUrl}`);
     
     // Format selected models as JSON string
     const formattedSelectedModels = formatSelectedModels(selectedModels);
@@ -248,6 +258,16 @@ export const addCampaignImage = async (req, res) => {
       return res.status(400).json({ data: encryptedResponse });
     }
     
+    // Important: Use the fileUrl from handleFileUpload instead of constructing the URL manually
+    if (!req.fileUrl) {
+      console.error("Missing fileUrl after image upload", { image });
+      const encryptedResponse = encryptData({ message: "Error processing uploaded image." });
+      return res.status(500).json({ data: encryptedResponse });
+    }
+    
+    // Use req.fileUrl which is set by handleFileUpload in your server.js
+    const imageUrl = req.fileUrl;
+    console.log(`Adding campaign image with URL: ${imageUrl}`);
     // Important: Use the fileUrl from handleFileUpload instead of constructing the URL manually
     if (!req.fileUrl) {
       console.error("Missing fileUrl after image upload", { image });
@@ -528,7 +548,16 @@ export const updateCampaign = async (req, res) => {
         return res.status(500).json({ data: encryptedResponse });
       }
       
+      // Important: Use the fileUrl from handleFileUpload instead of constructing the URL manually
+      if (!req.fileUrl) {
+        console.error("Missing fileUrl after new image upload", { newImage });
+        const encryptedResponse = encryptData({ message: "Error processing uploaded image." });
+        return res.status(500).json({ data: encryptedResponse });
+      }
+      
       deleteImage(imageUrl); // Delete the old image
+      imageUrl = req.fileUrl; // Use the fileUrl set by handleFileUpload
+      console.log(`Updating campaign with new image URL: ${imageUrl}`);
       imageUrl = req.fileUrl; // Use the fileUrl set by handleFileUpload
       console.log(`Updating campaign with new image URL: ${imageUrl}`);
     }
@@ -679,6 +708,10 @@ export const buildCampaign = async (req, res) => {
       const urlObj = new URL(img.url);
       const pathname = urlObj.pathname;
       const filename = path.basename(pathname);
+      // Get filename from URL
+      const urlObj = new URL(img.url);
+      const pathname = urlObj.pathname;
+      const filename = path.basename(pathname);
       return `${process.env.IMAGE_STORAGE_PATH || './data/Pictures'}/${filename}`;
     });
 
@@ -696,6 +729,10 @@ export const buildCampaign = async (req, res) => {
     try {
       // Create an array with all image paths, types, and descriptions
       const allImagesWithMetadata = images.map(img => {
+        // Get filename from URL
+        const urlObj = new URL(img.url);
+        const pathname = urlObj.pathname;
+        const filename = path.basename(pathname);
         // Get filename from URL
         const urlObj = new URL(img.url);
         const pathname = urlObj.pathname;
@@ -751,6 +788,10 @@ export const buildCampaign = async (req, res) => {
         // Pass the descriptions
         allImagesWithMetadata.map(img => img.description),
         // Pass the titles
+        allImagesWithMetadata.map(img => img.title),
+        // Pass the owner username and email
+        ownerUsername,
+        ownerEmail
         allImagesWithMetadata.map(img => img.title),
         // Pass the owner username and email
         ownerUsername,
@@ -823,6 +864,9 @@ export const updateCampaignStatus = async (req, res) => {
       status,
       model_id,
       product_id
+      status,
+      model_id,
+      product_id
     } = req.body;
 
     // Validate required fields
@@ -869,7 +913,12 @@ export const updateCampaignStatus = async (req, res) => {
     return res.status(200).json({ 
       success: true, 
       message: "Campaign status updated successfully",
-      data: updatedCampaign
+      data: {
+        ...updatedCampaign,
+        campaign_type: campaignType,
+        is_model_campaign: model_id === true,
+        is_product_campaign: product_id === true
+      }
     });
   } catch (error) {
     console.error("Error updating campaign status:", error);

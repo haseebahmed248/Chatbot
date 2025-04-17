@@ -37,6 +37,8 @@ const CampaignDetails = () => {
 
   // Model build state - Added 'pending' state
   const [modelState, setModelState] = useState<'disabled' | 'ready' | 'processing' | 'pending' | 'success'>('disabled');
+  // Model build state - Added 'pending' state
+  const [modelState, setModelState] = useState<'disabled' | 'ready' | 'processing' | 'pending' | 'success'>('disabled');
 
   // Image modal states
   const [selectedImage, setSelectedImage] = useState<CampaignImage | null>(null);
@@ -156,6 +158,40 @@ const CampaignDetails = () => {
   // Check if campaign is pending
   const isPendingCampaign = () => {
     return currentCampaign?.status === 'PENDING';
+  };
+
+  // Check if campaign is rejected
+  const isRejectedCampaign = () => {
+    return currentCampaign?.status === 'REJECTED';
+  };
+
+  // Get campaign status display info
+  const getCampaignStatusInfo = () => {
+    const statusMap: any = {
+      'PENDING': {
+        icon: 'fa-clock',
+        text: 'Pending Approval',
+        class: 'pending'
+      },
+      'APPROVED': {
+        icon: 'fa-check-circle',
+        text: 'Approved',
+        class: 'approved'
+      },
+      'REJECTED': {
+        icon: 'fa-times-circle',
+        text: 'Rejected',
+        class: 'rejected'
+      },
+      'ACTIVE': {
+        icon: 'fa-check-circle',
+        text: 'Active',
+        class: 'active'
+      }
+    };
+    
+    const campaignStatus = currentCampaign?.status || 'PENDING';
+    return statusMap[campaignStatus] || statusMap['PENDING'];
   };
 
   // Check if campaign is rejected
@@ -733,6 +769,7 @@ const CampaignDetails = () => {
     }
     
     // Set to processing state during API call
+    // Set to processing state during API call
     setModelState('processing');
     
     try {
@@ -742,6 +779,12 @@ const CampaignDetails = () => {
       // Set pending state after successful API call - waiting for admin approval
       setModelState('pending');
       showNotification("Campaign submitted for building. It will be available once an administrator approves it.", "success");
+      // Set pending state after successful API call - waiting for admin approval
+      setModelState('pending');
+      showNotification("Campaign submitted for building. It will be available once an administrator approves it.", "success");
+      
+      // Refresh campaign details to show the pending status
+      dispatch(fetchCampaignDetails(id));
       
       // Refresh campaign details to show the pending status
       dispatch(fetchCampaignDetails(id));
@@ -827,6 +870,7 @@ const CampaignDetails = () => {
   const modelClass = getModelClass(modelName);
   const mainImage = currentCampaign.image_url || currentCampaign.image || '';
   const statusInfo = getCampaignStatusInfo();
+  const statusInfo = getCampaignStatusInfo();
 
   return (
     <div className={`main-center-content-m-left ${themeSidebarToggle ? "collapsed" : ""}`}>
@@ -844,6 +888,26 @@ const CampaignDetails = () => {
             >
               <i className="fa-solid fa-times"></i>
             </button>
+          </div>
+        )}
+        
+        {/* Campaign Status Banner - NEW */}
+        {isPendingCampaign() && (
+          <div className="campaign-status-banner pending">
+            <i className="fa-solid fa-clock"></i>
+            <span>This campaign is awaiting administrator approval. You cannot modify it until it's approved.</span>
+          </div>
+        )}
+        
+        {isRejectedCampaign() && (
+          <div className="campaign-status-banner rejected">
+            <i className="fa-solid fa-times-circle"></i>
+            <span>This campaign has been rejected. Please check admin notes for details.</span>
+            {/* {currentCampaign.admin_notes && (
+              <div className="admin-notes">
+                <strong>Admin Notes:</strong> {currentCampaign.admin_notes}
+              </div>
+            )} */}
           </div>
         )}
         
@@ -908,6 +972,7 @@ const CampaignDetails = () => {
               className={`build-model-btn ${modelState}`}
               onClick={handleBuildModel}
               disabled={modelState === 'disabled' || modelState === 'processing' || modelState === 'pending' || isPendingCampaign()}
+              disabled={modelState === 'disabled' || modelState === 'processing' || modelState === 'pending' || isPendingCampaign()}
             >
               {modelState === 'disabled' ? (
                 <>
@@ -931,6 +996,11 @@ const CampaignDetails = () => {
                   <i className="fa-solid fa-clock"></i>
                   Pending Admin Approval
                 </>
+              ) : modelState === 'pending' ? (
+                <>
+                  <i className="fa-solid fa-clock"></i>
+                  Pending Admin Approval
+                </>
               ) : (
                 <>
                   <i className="fa-solid fa-check"></i>
@@ -940,6 +1010,23 @@ const CampaignDetails = () => {
             </button>
           )}
           
+          {/* Pending Build State - NEW */}
+          {modelState === 'pending' && !isCampaignBuilt() && (
+            <div className="build-status-info pending">
+              <i className="fa-solid fa-clock"></i>
+              <span>Build requested. Waiting for admin approval.</span>
+            </div>
+          )}
+          
+          {/* Chat Button - Only show if campaign is ACTIVE and built */}
+          {isCampaignBuilt() && currentCampaign.status === 'ACTIVE' && (
+            <button
+              className="main-image-chat-button"
+              onClick={handleChatWithCampaign}
+            >
+              <i className="fa-solid fa-comments"></i>
+              Chat with Campaign
+            </button>
           {/* Pending Build State - NEW */}
           {modelState === 'pending' && !isCampaignBuilt() && (
             <div className="build-status-info pending">
@@ -1025,6 +1112,15 @@ const CampaignDetails = () => {
                 </div>
               )} */}
               
+              
+              {/* Display admin info if available */}
+              {/* {currentCampaign.adminInfo && (
+                <div className="campaign-details-admin">
+                  <i className="fa-solid fa-user-shield"></i>
+                  Reviewed by: {currentCampaign.adminInfo.username}
+                </div>
+              )} */}
+              
               {isCampaignBuilt() && (
                 <div className="campaign-details-built">
                   <i className="fa-solid fa-lock"></i>
@@ -1032,6 +1128,14 @@ const CampaignDetails = () => {
                 </div>
               )}
             </div>
+            
+            {/* Admin notes display */}
+            {/* {currentCampaign.admin_notes && (
+              <div className="campaign-admin-notes">
+                <h4><i className="fa-solid fa-clipboard-list"></i> Admin Notes:</h4>
+                <p>{currentCampaign.admin_notes}</p>
+              </div>
+            )} */}
             
             {/* Admin notes display */}
             {/* {currentCampaign.admin_notes && (
@@ -1048,6 +1152,16 @@ const CampaignDetails = () => {
                 <img src={mainImage} alt={currentCampaign.name} />
                 <div className="main-image-badge">Main Image</div>
                 
+                {/* Add verification overlay if pending */}
+                {isPendingCampaign() && (
+                  <div className="image-verification-overlay">
+                    <i className="fa-solid fa-clock"></i>
+                    <span>Awaiting Verification</span>
+                  </div>
+                )}
+                
+                {/* Add chat button directly on the image if campaign is built and ACTIVE */}
+                {isCampaignBuilt() && currentCampaign.status === 'ACTIVE' && (
                 {/* Add verification overlay if pending */}
                 {isPendingCampaign() && (
                   <div className="image-verification-overlay">
