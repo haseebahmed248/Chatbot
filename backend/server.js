@@ -23,7 +23,7 @@ const __dirname = dirname(__filename);
 // Environment variables
 const isProduction = process.env.NODE_ENV === 'production';
 
-onst whitelist = new Set([
+const whitelist = new Set([
   'http://localhost:3000',
   'http://localhost:8000',
   'http://localhost:8001',
