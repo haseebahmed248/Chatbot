@@ -167,10 +167,6 @@ export const addCampaign = async (req, res) => {
       return res.status(500).json({ data: encryptedResponse });
     }
     
-    // Use req.fileUrl which is set by handleFileUpload in your server.js
-    const imageUrl = req.fileUrl;
-    console.log(`Adding campaign with image URL: ${imageUrl}`);
-    
     // Format selected models as JSON string
     const formattedSelectedModels = formatSelectedModels(selectedModels);
     
@@ -274,10 +270,6 @@ export const addCampaignImage = async (req, res) => {
       const encryptedResponse = encryptData({ message: "Error processing uploaded image." });
       return res.status(500).json({ data: encryptedResponse });
     }
-    
-    // Use req.fileUrl which is set by handleFileUpload in your server.js
-    const imageUrl = req.fileUrl;
-    console.log(`Adding campaign image with URL: ${imageUrl}`);
     
     const newImage = await prisma.campaign_images.create({
       data: {
@@ -708,10 +700,6 @@ export const buildCampaign = async (req, res) => {
       const urlObj = new URL(img.url);
       const pathname = urlObj.pathname;
       const filename = path.basename(pathname);
-      // Get filename from URL
-      const urlObj = new URL(img.url);
-      const pathname = urlObj.pathname;
-      const filename = path.basename(pathname);
       return `${process.env.IMAGE_STORAGE_PATH || './data/Pictures'}/${filename}`;
     });
 
@@ -729,10 +717,6 @@ export const buildCampaign = async (req, res) => {
     try {
       // Create an array with all image paths, types, and descriptions
       const allImagesWithMetadata = images.map(img => {
-        // Get filename from URL
-        const urlObj = new URL(img.url);
-        const pathname = urlObj.pathname;
-        const filename = path.basename(pathname);
         // Get filename from URL
         const urlObj = new URL(img.url);
         const pathname = urlObj.pathname;
@@ -788,10 +772,6 @@ export const buildCampaign = async (req, res) => {
         // Pass the descriptions
         allImagesWithMetadata.map(img => img.description),
         // Pass the titles
-        allImagesWithMetadata.map(img => img.title),
-        // Pass the owner username and email
-        ownerUsername,
-        ownerEmail
         allImagesWithMetadata.map(img => img.title),
         // Pass the owner username and email
         ownerUsername,
@@ -861,9 +841,6 @@ export const updateCampaignStatus = async (req, res) => {
       campain_id, 
       campain_name, 
       model_name,
-      status,
-      model_id,
-      product_id
       status,
       model_id,
       product_id
