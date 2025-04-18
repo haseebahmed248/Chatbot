@@ -30,6 +30,7 @@ const whitelist = new Set([
   'http://localhost:8001',
   'http://localhost:8080',
   'https://ad-genie.vercel.app',
+  'http://149.40.228.124:3000',
   'https://colab.research.google.com',
   'https://*.googleusercontent.com', // This covers various Colab subdomains
   process.env.FRONTEND_URL
