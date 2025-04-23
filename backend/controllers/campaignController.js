@@ -108,7 +108,6 @@ export const getCampaignDetails = async (req, res) => {
       images,
       adminInfo
     };
-    
     const encryptedResponse = encryptData(responseData);
     return res.status(200).json({ data: encryptedResponse });
   
@@ -123,7 +122,7 @@ export const getCampaignDetails = async (req, res) => {
 export const addCampaign = async (req, res) => {
   const { name, description, modelName, selectedModels, userId, campaignType, is_model_campaign, is_product_campaign } = req.body;
   const image = req.file;
-
+  console.log('campaignType:', campaignType);
   if (!name || !description || !userId || !image) {
     const encryptedResponse = encryptData({ message: "Name, description, user ID, and image are required." });
     return res.status(400).json({ data: encryptedResponse });
