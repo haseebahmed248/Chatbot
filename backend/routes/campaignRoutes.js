@@ -9,7 +9,8 @@ import {
   updateCampaignImage,
   buildCampaign,
   getResponse,
-  updateCampaignStatus
+  updateCampaignStatus,
+  updateMergeCompletion
 } from "../controllers/campaignController.js";
 
 export default (req, res, endpoint) => {
@@ -26,6 +27,7 @@ export default (req, res, endpoint) => {
     return getResponse(req, res);
   }
   if (endpoint === "updateCampaignStatus") return updateCampaignStatus(req, res);
+  if (endpoint === "updateMergeCompletion") return updateMergeCompletion(req, res);
 
   return res.status(404).json({ message: "Invalid campaign API" });
 };
