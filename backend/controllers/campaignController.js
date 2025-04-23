@@ -776,6 +776,13 @@ export const buildCampaign = async (req, res) => {
         ownerUsername,
         ownerEmail
       );
+      await primsa.campaigns.update({
+        where: {
+          id: parseInt(campaignId)
+        },
+        data: {
+          is_being_built: true,
+        }})
       
     } catch (pythonError) {
       console.error("Error communicating with Python backend:", pythonError);
@@ -881,7 +888,8 @@ export const updateCampaignStatus = async (req, res) => {
         build_date: new Date(), // Set build date to current timestamp
         campaign_type: campaignType, // Set the campaign type
         is_model_campaign: model_id === true, // Boolean flag for model campaign
-        is_product_campaign: product_id === true // Boolean flag for product campaign
+        is_product_campaign: product_id === true, // Boolean flag for product campaign
+        is_being_built: false // Mark as not being built anymore
       }
     });
 
