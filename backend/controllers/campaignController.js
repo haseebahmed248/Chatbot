@@ -929,13 +929,18 @@ export const updateCampaignStatus = async (req, res) => {
 export const updateMergeCompletion = async (req, res) => {
   try {
     // Extract data from request body
-    const { 
+    let { 
       model_campaign_id,   
       model_campaign_name,
       product_campaign_name,
       product_campaign_id, 
       fusion_status               
     } = req.body;
+
+    // Normalize fusion_status to uppercase at the start to avoid case sensitivity issues
+    if (fusion_status) {
+      fusion_status = fusion_status.toUpperCase();
+    }
 
     // Validate required fields
     if (!model_campaign_id || !product_campaign_id || !fusion_status) {
@@ -945,11 +950,11 @@ export const updateMergeCompletion = async (req, res) => {
       });
     }
 
-    // Validate status value
-    if (fusion_status !== 'success' && fusion_status !== 'failed') {
+    // Validate status value using uppercase for consistency
+    if (fusion_status !== 'SUCCESS' && fusion_status !== 'FAILED') {
       return res.status(400).json({ 
         success: false, 
-        message: "Status must be either 'success' or 'failed'" 
+        message: "Status must be either 'SUCCESS' or 'FAILED'" 
       });
     }
 
@@ -962,14 +967,14 @@ export const updateMergeCompletion = async (req, res) => {
       prisma.campaigns.update({
         where: { id: modelId },
         data: {
-          merge_status: fusion_status === 'success' ? 'completed' : 'failed',
+          merge_status: fusion_status === 'SUCCESS' ? 'COMPLETED' : 'FAILED',
           merge_date: new Date()
         }
       }),
       prisma.campaigns.update({
         where: { id: productId },
         data: {
-          merge_status: fusion_status === 'success' ? 'completed' : 'failed',
+          merge_status: fusion_status === 'SUCCESS' ? 'COMPLETED' : 'FAILED',
           merge_date: new Date()
         }
       })
@@ -978,7 +983,7 @@ export const updateMergeCompletion = async (req, res) => {
     // Return success response
     return res.status(200).json({
       success: true,
-      message: fusion_status === 'success' ? 
+      message: fusion_status === 'SUCCESS' ? 
         "Campaign merge completed successfully" : 
         "Campaign merge failed",
       data: {
