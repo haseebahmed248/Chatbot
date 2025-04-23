@@ -925,17 +925,20 @@ export const updateCampaignStatus = async (req, res) => {
 };
 
 
+
 export const updateMergeCompletion = async (req, res) => {
   try {
     // Extract data from request body
     const { 
       model_campaign_id,   
+      model_campaign_name,
+      product_campaign_name,
       product_campaign_id, 
-      status               
+      fusion_status               
     } = req.body;
 
     // Validate required fields
-    if (!model_campaign_id || !product_campaign_id || !status) {
+    if (!model_campaign_id || !product_campaign_id || !fusion_status) {
       return res.status(400).json({ 
         success: false, 
         message: "Both model campaign ID and product campaign ID, and status are required" 
@@ -943,7 +946,7 @@ export const updateMergeCompletion = async (req, res) => {
     }
 
     // Validate status value
-    if (status !== 'success' && status !== 'failed') {
+    if (fusion_status !== 'success' && fusion_status !== 'failed') {
       return res.status(400).json({ 
         success: false, 
         message: "Status must be either 'success' or 'failed'" 
@@ -959,14 +962,14 @@ export const updateMergeCompletion = async (req, res) => {
       prisma.campaigns.update({
         where: { id: modelId },
         data: {
-          merge_status: status === 'success' ? 'completed' : 'failed',
+          merge_status: fusion_status === 'success' ? 'completed' : 'failed',
           merge_date: new Date()
         }
       }),
       prisma.campaigns.update({
         where: { id: productId },
         data: {
-          merge_status: status === 'success' ? 'completed' : 'failed',
+          merge_status: fusion_status === 'success' ? 'completed' : 'failed',
           merge_date: new Date()
         }
       })
@@ -975,7 +978,7 @@ export const updateMergeCompletion = async (req, res) => {
     // Return success response
     return res.status(200).json({
       success: true,
-      message: status === 'success' ? 
+      message: fusion_status === 'success' ? 
         "Campaign merge completed successfully" : 
         "Campaign merge failed",
       data: {
