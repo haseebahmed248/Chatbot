@@ -63,6 +63,7 @@ model campaigns {
   admin_notes          String?
   admin_id             Int?
   is_built             Boolean?          @default(false)
+  is_being_built       Boolean?          @default(false)
   build_date           DateTime?         @db.Timestamp(6)
   campaign_images      campaign_images[]
   // New fields for campaign types
