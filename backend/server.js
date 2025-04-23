@@ -30,7 +30,6 @@ const whitelist = new Set([
   'http://localhost:8001',
   'http://localhost:8080',
   'https://ad-genie.vercel.app',
-  'http://149.40.228.124:3000',
   'https://colab.research.google.com',
   'https://*.googleusercontent.com', // This covers various Colab subdomains
   process.env.FRONTEND_URL
@@ -87,6 +86,15 @@ app.put('/api/updateCampaignStatus', async(req,res)=>{
     return res.status(500).json({ message: error.message || "An error occurred" });
   }
 });
+
+app.put('/api/updateMergeCompletion',async(req,res)=>{
+  try {
+    return campaignRoutes(req, res, "updateMergeCompletion");
+  } catch (error) {
+    console.error("Error in Update campaign Status:", error);
+    return res.status(500).json({ message: error.message || "An error occurred" });
+  }
+})
 
 // Single gateway for all API requests
 app.post("/", async (req, res) => {
